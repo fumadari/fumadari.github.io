@@ -134,6 +134,16 @@ My primary research interests include:
     transition: box-shadow 0.3s ease;
 }
 
+<style>
+/* Ensure header or any sticky elements are set to static positioning */
+header, h1, h2, .header, .navbar {
+    position: static !important;  /* Force it to be static */
+    margin: 0;
+    padding: 0;
+}
+</style>
+
+
 .project-card:hover {
     box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
 }
