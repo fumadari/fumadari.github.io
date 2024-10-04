@@ -134,6 +134,48 @@ My primary research interests include:
     transition: box-shadow 0.3s ease;
 }
 
+/* Markdown-like styling */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol" !important;
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+    color: #24292e !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol" !important;
+    margin-top: 24px !important;
+    margin-bottom: 16px !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+}
+
+h1 { font-size: 2em !important; }
+h2 { font-size: 1.5em !important; }
+h3 { font-size: 1.25em !important; }
+
+p, ul, ol {
+    margin-top: 0 !important;
+    margin-bottom: 16px !important;
+}
+
+a {
+    color: #0366d6 !important;
+    text-decoration: none !important;
+}
+
+a:hover {
+    text-decoration: underline !important;
+}
+
+/* Override any theme-specific styles */
+.markdown-body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol" !important;
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+    color: #24292e !important;
+}
+
 /* Ensure header or any sticky elements are set to static positioning */
 header, h1, h2, .header, .navbar {
     position: static !important;  /* Force it to be static */
