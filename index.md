@@ -4,7 +4,7 @@ title: [Your Name]
 ---
 
 <div style="display: flex; align-items: center; margin-bottom: 20px;">
-  <img src="assets/images/profile.jpg" alt="Profile Image" style="border-radius: 50%; width: 150px; margin-right: 20px;">
+  <img src="assets/images/profile.jpg" alt="Profile Image" style="border-radius: 50%; width: 150px; margin-right: 10px;">  <!-- Changed margin-right from 20px to 10px -->
   <div>
     <h1>[Your Name] 👨‍💻</h1>
     <p>Ph.D. Applicant | Solutions Architect @ AWS</p>
