@@ -1,0 +1,63 @@
+/* Styling for the timeline */
+.timeline {
+    position: relative;
+    margin: 20px 0;
+    padding-left: 40px;
+    border-left: 2px solid #0366d6;
+}
+
+.timeline-item {
+    margin-bottom: 30px;  /* Added space between items */
+    position: relative;
+}
+
+.timeline-item::before {
+    content: "";
+    position: absolute;
+    left: -9px;
+    top: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #0366d6;
+}
+
+.timeline-item .date {
+    color: #666;
+    font-size: 0.9rem;  /* Smaller date size */
+    margin-bottom: 5px;  /* Space between date and title */
+}
+
+.timeline-item h3 {
+    font-size: 1.2rem;  /* Larger, bolder title */
+    margin-top: 0;
+    font-weight: bold;
+}
+
+.timeline-item p {
+    font-size: 1rem;  /* Slightly larger description font */
+    color: #444;
+    line-height: 1.6;
+}
+
+.timeline-item h3, .timeline-item strong {
+    color: #333;  /* Darker title and bold text */
+}
+
+/* Styling for projects */
+.project-grid {
+    display: flex;
+    gap: 20px;
+}
+
+.project-card {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 8px;
+    flex: 1;
+    transition: box-shadow 0.3s ease;
+}
+
+.project-card:hover {
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+}
