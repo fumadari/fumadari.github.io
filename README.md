@@ -1,8 +1,5 @@
 # fumadari.github.io
 
-
-# PhD Portfolio Website
-
 Welcome to the repository for my PhD portfolio website. This site showcases my academic journey, research interests, and projects as I pursue my PhD in Computer Science.
 
 ## Overview
