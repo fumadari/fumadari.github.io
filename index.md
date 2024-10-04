@@ -3,22 +3,27 @@ layout: default
 title: [Your Name]
 ---
 
-![Profile Image](assets/images/profile.jpg)
+<div style="display: flex; align-items: center; margin-bottom: 20px;">
+  <img src="assets/images/profile.jpg" alt="Profile Image" style="border-radius: 50%; width: 150px; margin-right: 20px;">
+  <div>
+    <h1>[Your Name] 👨‍💻</h1>
+    <p>Ph.D. Applicant | Solutions Architect @ AWS</p>
+    <p><a href="mailto:your.email@example.com"><i class="fas fa-envelope"></i> your.email@example.com</a></p>
+    <p><a href="https://linkedin.com/in/your-profile"><i class="fab fa-linkedin"></i> LinkedIn</a> | 
+       <a href="https://github.com/your-username"><i class="fab fa-github"></i> GitHub</a></p>
+    <p><a href="assets/resume.pdf" download><i class="fas fa-file-pdf"></i> Download CV</a></p>
+  </div>
+</div>
 
-# [Your Name] 👨‍💻
+## About
 
-### Ph.D. Applicant | Solutions Architect @ AWS
-**Email**: your.email@example.com  
-**LinkedIn**: [linkedin.com/in/your-profile](https://linkedin.com/in/your-profile)  
-**GitHub**: [github.com/your-username](https://github.com/your-username)  
-**Location**: [Hometown, State](https://www.google.com/maps/place/Your+Hometown,+State)
+Hello! I am a Ph.D. Applicant focusing on the intersection of **AI**, **Machine Learning**, and **Mathematics**. Currently, I work as a **Solutions Architect** at [Amazon Web Services (AWS)](https://aws.amazon.com), applying my experience in large-scale distributed systems to cutting-edge AI research.
 
----
+I earned my **B.S. in Computer Science** from [University Name](https://www.university-website.edu), and I've previously worked on projects with [Company X](https://company-x.com) and contributed to research on [Neural Networks](https://en.wikipedia.org/wiki/Neural_network).
 
-## About Me
-Hi! I am a **Solutions Architect** at [Amazon Web Services (AWS)](https://aws.amazon.com/), applying for PhD programs in **AI**, **Computer Science**, and **Mathematics**.
-
-Previously, I obtained my **B.S. in Computer Science** from [University Name](https://www.university-website.edu) and have worked on projects with [Company X](https://company-x.com). My research interests focus on the intersection of AI, machine learning, and cloud-based systems.
+My primary research interests include:
+- **LLM Evaluation**: Exploring frameworks to evaluate language models' performance and shortcomings.
+- **Weak-to-Strong Generalization**: Training models to generalize effectively across various tasks.
 
 ---
 
@@ -30,11 +35,25 @@ Previously, I obtained my **B.S. in Computer Science** from [University Name](ht
 
 ---
 
-## Research Interests
-- **Artificial Intelligence**: Developing smarter, more adaptive systems.
-- **Machine Learning**: Focusing on model optimization and weak-to-strong generalization.
-- **Neural Networks**: Modeling nonlinear systems and predictive dynamics.
-- **Cloud-Based Architectures**: Scaling solutions for AI-driven research.
+## Vitae
+
+<div class="timeline">
+  <div class="timeline-item">
+    <span class="date">Aug 2024 - Present</span>
+    <h3>Ph.D. in Computer Science</h3>
+    <p><strong>Language Technologies Institute, CMU</strong> (Advisors: Graham Neubig and Sean Welleck)</p>
+    <p>Working on LLM Evaluation and Weak-to-Strong Generalization.</p>
+  </div>
+
+  <div class="timeline-item">
+    <span class="date">Mar 2023 - Aug 2024</span>
+    <h3>M.S. in Artificial Intelligence</h3>
+    <p><strong>KAIST AI</strong> (Advisor: Minjoon Seo)</p>
+    <p>Worked on evaluator LM & VLMs, and Chain-of-Thought fine-tuning.</p>
+  </div>
+
+  <!-- Add more timeline items as needed -->
+</div>
 
 ---
 
@@ -42,43 +61,17 @@ Previously, I obtained my **B.S. in Computer Science** from [University Name](ht
 
 <div class="project-grid">
   <div class="project-card">
-    <h3><a href="https://github.com/your-username/project1">Project 1: Scalable Clustering</a></h3>
-    <p>Developed a scalable clustering algorithm for 1M+ vectors to improve system recall.</p>
+    <h3><a href="https://github.com/your-username/project1">Scalable Clustering for 1M+ Vectors</a></h3>
+    <p>Developed a clustering algorithm to improve recall and efficiency in distributed systems.</p>
+    <p><a href="https://arxiv.org/abs/your-paper" target="_blank"><i class="fas fa-file-pdf"></i> Read Paper</a> | <a href="https://github.com/your-username/project1"><i class="fab fa-github"></i> View Code</a></p>
   </div>
 
   <div class="project-card">
-    <h3><a href="https://github.com/your-username/project2">Project 2: GNN for Drug Discovery</a></h3>
-    <p>Implemented a Graph Neural Network for drug discovery, achieving 91% accuracy.</p>
-  </div>
-
-  <div class="project-card">
-    <h3><a href="https://github.com/your-username/project3">Project 3: Cloud-Native Vector Duplication</a></h3>
-    <p>Built a cloud-native system for vector duplication, improving performance in large-scale distributed systems.</p>
+    <h3><a href="https://github.com/your-username/project2">Graph Neural Networks for Drug Discovery</a></h3>
+    <p>Achieved 91% accuracy in drug molecular analysis using GNN.</p>
+    <p><a href="https://arxiv.org/abs/your-paper" target="_blank"><i class="fas fa-file-pdf"></i> Read Paper</a> | <a href="https://github.com/your-username/project2"><i class="fab fa-github"></i> View Code</a></p>
   </div>
 </div>
-
----
-
-## Publications
-1. **[Paper Title 1](https://arxiv.org/abs/your-paper)** - Published in [Conference Name] 2024.
-2. **[Paper Title 2](https://arxiv.org/abs/your-paper)** - Published in [Conference Name] 2023.
-3. **[Paper Title 3](https://arxiv.org/abs/your-paper)** - Under review at [Conference Name] 2025.
-
----
-
-## Education
-- **Ph.D. in Computer Science** (Expected 2025)  
-  [University Name]
-- **M.S. in Artificial Intelligence** (2024)  
-  [University Name]
-- **B.S. in Computer Science** (2023)  
-  [University Name]
-
----
-
-## Contact
-**Email**: your.email@example.com  
-**Calendly**: [Book a Meeting](https://calendly.com/your-link)
 
 ---
 
@@ -92,32 +85,55 @@ Previously, I obtained my **B.S. in Computer Science** from [University Name](ht
 </footer>
 
 <style>
+/* Styling for the timeline */
+.timeline {
+    position: relative;
+    margin: 20px 0;
+    padding-left: 40px;
+    border-left: 2px solid #0366d6;
+}
+
+.timeline-item {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.timeline-item::before {
+    content: "";
+    position: absolute;
+    left: -9px;
+    top: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #0366d6;
+}
+
+.timeline-item .date {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.timeline-item h3 {
+    margin-top: 0;
+}
+
+/* Styling for projects */
 .project-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
+    display: flex;
+    gap: 20px;
 }
 
 .project-card {
-  border: 1px solid #ddd;
-  padding: 15px;
-  border-radius: 8px;
-  width: 30%;
-  transition: box-shadow 0.3s ease;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 8px;
+    flex: 1;
+    transition: box-shadow 0.3s ease;
 }
 
 .project-card:hover {
-  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.project-card h3 {
-  margin-top: 0;
-  font-size: 20px;
-}
-
-.project-card p {
-  font-size: 16px;
-  color: #666;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 footer {
@@ -146,8 +162,3 @@ footer ul.social a:hover {
   text-decoration: underline;
 }
 </style>
-
-
-## Contact
-**Email**: your.email@example.com  
-**Calendly**: [Book a Meeting](https://calendly.com/your-link)  
