@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[Your Name]'s Portfolio</title>
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Styling for the timeline */
+        .timeline {
+            position: relative;
+            margin: 20px 0;
+            padding-left: 40px;
+            border-left: 2px solid #0366d6;
+        }
+        
+        .timeline-item {
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .timeline-item::before {
+            content: "";
+            position: absolute;
+            left: -9px;
+            top: 0;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #0366d6;
+        }
+        
+        .timeline-item .date {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .timeline-item h3 {
+            font-size: 1.2rem;
+            margin-top: 0;
+            font-weight: bold;
+        }
+        
+        .timeline-item p {
+            font-size: 1rem;
+            color: #444;
+            line-height: 1.6;
+        }
+        
+        .timeline-item h3, .timeline-item strong {
+            color: #333;
+        }
+        
+        /* Styling for projects */
+        .project-grid {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .project-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            flex: 1 1 300px;
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .project-card:hover {
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        /* Fix for scrolling issue */
+        header, h1, h2, .header, .navbar, .page-header, #header, #masthead {
+            position: static !important;
+            top: auto !important;
+            left: auto !important;
+            right: auto !important;
+            bottom: auto !important;
+            z-index: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        /* Additional styles */
+        a {
+            color: #0366d6;
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div style="display: flex; align-items: center; margin-bottom: 20px;">
+        <img src="assets/images/profile.jpg" alt="Profile Image" style="border-radius: 50%; width: 150px; margin-right: 20px;">
+        <div>
+            <h1>[Your Name] 👨‍💻</h1>
+            <p>Ph.D. Applicant | Solutions Architect @ AWS</p>
+            <p><a href="mailto:your.email@example.com"><i class="fas fa-envelope"></i> your.email@example.com</a></p>
+            <p><a href="https://linkedin.com/in/your-profile"><i class="fab fa-linkedin"></i> LinkedIn</a> | 
+               <a href="https://github.com/your-username"><i class="fab fa-github"></i> GitHub</a></p>
+            <p><a href="assets/resume.pdf" download><i class="fas fa-file-pdf"></i> Download CV</a></p>
+        </div>
+    </div>
+
+    <h2>About</h2>
+    <p>Hello! I am a Ph.D. Applicant focusing on the intersection of <strong>AI</strong>, <strong>Machine Learning</strong>, and <strong>Mathematics</strong>. Currently, I work as a <strong>Solutions Architect</strong> at <a href="https://aws.amazon.com">Amazon Web Services (AWS)</a>, applying my experience in large-scale distributed systems to cutting-edge AI research.</p>
+    <p>I earned my <strong>B.S. in Computer Science</strong> from <a href="https://www.university-website.edu">University Name</a>, and I've previously worked on projects with <a href="https://company-x.com">Company X</a> and contributed to research on <a href="https://en.wikipedia.org/wiki/Neural_network">Neural Networks</a>.</p>
+    <p>My primary research interests include:</p>
+    <ul>
+        <li><strong>LLM Evaluation</strong>: Exploring frameworks to evaluate language models' performance and shortcomings.</li>
+        <li><strong>Weak-to-Strong Generalization</strong>: Training models to generalize effectively across various tasks.</li>
+    </ul>
+
+    <h2>News & Updates</h2>
+    <ul>
+        <li><strong>October 2024</strong>: Submitted a paper on Neural Network Optimization to <a href="https://icml.cc/">ICML 2025</a>.</li>
+        <li><strong>August 2024</strong>: Started a new project on scalable data architectures at AWS. <a href="https://github.com/your-username/project-repo">Read more</a>.</li>
+        <li><strong>May 2024</strong>: Completed an internship at <a href="https://company-x.com">Company X</a> focused on distributed AI systems.</li>
+        <li><strong>March 2024</strong>: Gave a talk on AI in distributed systems at <a href="https://conferencey.org">Conference Y</a>.</li>
+    </ul>
+
+    <h2>Vitae</h2>
+    <div class="timeline">
+        <div class="timeline-item">
+            <span class="date">Aug 2024 - Present</span>
+            <h3>Ph.D. in Computer Science</h3>
+            <p><strong>Language Technologies Institute, CMU</strong> (Advisors: Graham Neubig and Sean Welleck)</p>
+            <p>Working on LLM Evaluation and Weak-to-Strong Generalization.</p>
+        </div>
+
+        <div class="timeline-item">
+            <span class="date">Mar 2023 - Aug 2024</span>
+            <h3>M.S. in Artificial Intelligence</h3>
+            <p><strong>KAIST AI</strong> (Advisor: Minjoon Seo)</p>
+            <p>Worked on evaluator LM & VLMs, and Chain-of-Thought fine-tuning.</p>
+        </div>
+    </div>
+
+    <h2>Selected Projects</h2>
+    <div class="project-grid">
+        <div class="project-card">
+            <h3><a href="https://github.com/your-username/project1">Scalable Clustering for 1M+ Vectors</a></h3>
+            <p>Developed a clustering algorithm to improve recall and efficiency in distributed systems.</p>
+            <p><a href="https://arxiv.org/abs/your-paper" target="_blank"><i class="fas fa-file-pdf"></i> Read Paper</a> | <a href="https://github.com/your-username/project1"><i class="fab fa-github"></i> View Code</a></p>
+        </div>
+
+        <div class="project-card">
+            <h3><a href="https://github.com/your-username/project2">Graph Neural Networks for Drug Discovery</a></h3>
+            <p>Achieved 91% accuracy in drug molecular analysis using GNN.</p>
+            <p><a href="https://arxiv.org/abs/your-paper" target="_blank"><i class="fas fa-file-pdf"></i> Read Paper</a> | <a href="https://github.com/your-username/project2"><i class="fab fa-github"></i> View Code</a></p>
+        </div>
+    </div>
+</body>
+</html>
