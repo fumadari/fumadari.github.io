@@ -51,8 +51,6 @@ My primary research interests include:
     <p><strong>KAIST AI</strong> (Advisor: Minjoon Seo)</p>
     <p>Worked on evaluator LM & VLMs, and Chain-of-Thought fine-tuning.</p>
   </div>
-
-  <!-- Add more timeline items as needed -->
 </div>
 
 ---
@@ -183,3 +181,4 @@ header, h1, h2, .header, .navbar {
     padding: 0;
 }
 </style>
+
