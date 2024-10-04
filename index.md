@@ -1,6 +1,6 @@
 ---
 layout: default
-title: ""
+title: "Your Name"
 ---
 
 <div style="display: flex; align-items: center; margin-bottom: 20px;">
