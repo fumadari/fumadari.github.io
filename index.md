@@ -73,17 +73,6 @@ My primary research interests include:
   </div>
 </div>
 
----
-
-<footer>
-  <p>Let's connect!</p>
-  <ul class="social">
-    <li><a href="https://www.linkedin.com/in/your-profile" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a></li>
-    <li><a href="mailto:your.email@example.com"><i class="fas fa-envelope"></i> Email</a></li>
-    <li><a href="https://github.com/your-username"><i class="fab fa-github"></i> GitHub</a></li>
-  </ul>
-</footer>
-
 <style>
 /* Styling for the timeline */
 .timeline {
@@ -94,7 +83,7 @@ My primary research interests include:
 }
 
 .timeline-item {
-    margin-bottom: 20px;
+    margin-bottom: 30px;  /* Added space between items */
     position: relative;
 }
 
@@ -111,11 +100,24 @@ My primary research interests include:
 
 .timeline-item .date {
     color: #666;
-    font-size: 0.9rem;
+    font-size: 0.9rem;  /* Smaller date size */
+    margin-bottom: 5px;  /* Space between date and title */
 }
 
 .timeline-item h3 {
+    font-size: 1.2rem;  /* Larger, bolder title */
     margin-top: 0;
+    font-weight: bold;
+}
+
+.timeline-item p {
+    font-size: 1rem;  /* Slightly larger description font */
+    color: #444;
+    line-height: 1.6;
+}
+
+.timeline-item h3, .timeline-item strong {
+    color: #333;  /* Darker title and bold text */
 }
 
 /* Styling for projects */
@@ -135,30 +137,5 @@ My primary research interests include:
 .project-card:hover {
     box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
 }
-
-footer {
-  margin-top: 50px;
-  text-align: center;
-  font-size: 16px;
-}
-
-footer ul.social {
-  list-style: none;
-  padding: 0;
-}
-
-footer ul.social li {
-  display: inline;
-  margin: 0 10px;
-}
-
-footer ul.social a {
-  text-decoration: none;
-  color: #0366d6;
-  font-size: 20px;
-}
-
-footer ul.social a:hover {
-  text-decoration: underline;
-}
 </style>
+
