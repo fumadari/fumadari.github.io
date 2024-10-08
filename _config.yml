@@ -1,2 +1,6 @@
+title: Your Name
+logo: /assets/img/logo.png
+description: Your personal tagline or brief description
+show_downloads: true
+google_analytics:
 theme: jekyll-theme-minimal
-
