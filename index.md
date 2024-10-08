@@ -4,7 +4,7 @@ layout: default
 
 # About Me
 
-Hey! I’m Dario, a Computer Science and Mathematics graduate from Washington and Lee University. Originally from a [small village in Italy](https://en.wikipedia.org/wiki/Your_Village_Name), I’m currently working as a Prototype Architect for Amazon Web Services in New York City, where I focus on designing innovative solutions that leverage the latest in cloud and AI technologies.
+Hey! I’m Dario, a Computer Science and Mathematics graduate from Washington and Lee University. Originally from a [small village in Italy](https://en.wikipedia.org/wiki/Cisternino), I'm working as a Prototype Architect for Amazon Web Services in New York City, designing innovative solutions built on cloud and AI technologies.
 
 My current focus centers on the mathematical optimization and interpretability of deep learning models, particularly regarding representation learning and causality within AI systems. I am deeply interested in researching how advanced AI models can be made more interpretable, reliable, and ethically aligned, ensuring their deployment stays transparent and beneficial to society.
 
@@ -12,15 +12,14 @@ My current focus centers on the mathematical optimization and interpretability o
 
 - **Interpretable AI**: Developing models using Shapley values, mutual information, and causal inference to quantify feature importance and enhance model transparency.
 - **Ethical AI**: Applying probabilistic models and optimization techniques to enforce fairness constraints in decision-making algorithms.
-- **Geometric Deep Learning**: Using differential geometry manifold learning, Lie groups and graph neural networks to handle non-Euclidean data in deep learning.
+- **Geometric Deep Learning**: Using differential geometry manifold learning, Lie groups, and graph neural networks to handle non-Euclidean data in deep learning.
 - **Cloud-Based AI**: Optimizing distributed AI training through parallelization, dynamic resource allocation, and fault-tolerant architectures in large-scale cloud environments.
 
 
 ## Education
 
 **Washington and Lee University** (2019 - 2023)  
-Computer Science and Mathematics  
-*Davis Scholar*
+Computer Science and Mathematics - *Davis Scholar*
 
 Relevant Coursework: Deep Learning, Machine Learning and Big Data, Real Analysis, Network Security, Differential Geometry
 
@@ -39,7 +38,7 @@ Relevant Coursework: Deep Learning, Machine Learning and Big Data, Real Analysis
 - Collaborated on the development of distributed storage systems, replacing AWS legacy services
 
 ### Williams Investment Society
-*Group Head, Technology* (2020 - 2022)
+*Financial Researcher, Technology* (2020 - 2022)
 - Led a team managing a $5.5M tech sector portfolio within a larger $20M endowment
 - Applied quantitative analysis and financial modeling for investment strategies
 
@@ -61,5 +60,5 @@ Relevant Coursework: Deep Learning, Machine Learning and Big Data, Real Analysis
 I'm always eager to discuss research opportunities or collaborate on interesting projects. Feel free to reach out!
 
 Email: [dariofumarola90@gmail.com](mailto:dariofumarola90@gmail.com)  
-LinkedIn: [Dario Fumarola](https://www.linkedin.com/in/your-profile)  
-GitHub: [fumadari](https://github.com/fumarolad)
+LinkedIn: [Dario Fumarola](https://www.linkedin.com/in/fumarolad)  
+GitHub: [fumadari](https://github.com/fumadari)
