@@ -8,6 +8,8 @@ Hey! I’m Dario, a Computer Science and Mathematics graduate from Washington an
 
 My current focus centers on the mathematical optimization and interpretability of deep learning models, particularly regarding representation learning and causality within AI systems. I am deeply interested in researching how advanced AI models can be made more interpretable, reliable, and ethically aligned, ensuring their deployment stays transparent and beneficial to society.
 
+[Download CV](./assets/cv/dario_fumarola_cv.pdf)
+
 ### Research Interests
 
 - **Interpretable AI**: Using Shapley values, mutual information, and causal inference to quantify feature importance and enhance model transparency.
@@ -45,7 +47,6 @@ Developed a multi-head GAT for molecular property prediction, achieving 91% accu
 
 I'm always eager to discuss research opportunities or collaborate on interesting projects. Feel free to reach out!
 
-[Download CV](./assets/cv/dario_fumarola_cv.pdf)
 Email: [dariofumarola90@gmail.com](mailto:dariofumarola90@gmail.com)  
 LinkedIn: [Dario Fumarola](https://www.linkedin.com/in/fumarolad)  
 GitHub: [fumadari](https://github.com/fumadari)
