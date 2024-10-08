@@ -20,7 +20,7 @@ My current focus centers on the mathematical optimization and interpretability o
 **Washington and Lee University** (2019 - 2023)  
 Computer Science and Mathematics - *Davis Scholar*
 
-Relevant Coursework: Deep Learning, Machine Learning and Big Data, Real Analysis, Network Security, Differential Geometry
+Relevant Coursework: Deep Learning, Machine Learning and Big Data, Real Analysis, Network Security, Differential Geometry, Differential Equations
 
 ### Experience Highlights
 
