@@ -2,62 +2,70 @@
 .timeline {
     position: relative;
     margin: 20px 0;
-    padding-left: 40px;
+    padding-left: 30px;
     border-left: 2px solid #0366d6;
 }
 
 .timeline-item {
-    margin-bottom: 30px;  /* Added space between items */
+    margin-bottom: 40px;
     position: relative;
+    padding-left: 20px;
 }
 
 .timeline-item::before {
     content: "";
     position: absolute;
-    left: -9px;
-    top: 0;
-    width: 16px;
-    height: 16px;
+    left: -11px;
+    top: 4px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    background-color: #0366d6;
+    background-color: #fff;
+    border: 2px solid #0366d6;
 }
 
 .timeline-item .date {
     color: #666;
-    font-size: 0.9rem;  /* Smaller date size */
-    margin-bottom: 5px;  /* Space between date and title */
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    font-weight: 600;
 }
 
 .timeline-item h3 {
-    font-size: 1.2rem;  /* Larger, bolder title */
+    font-size: 1.3rem;
     margin-top: 0;
-    font-weight: bold;
+    margin-bottom: 10px;
+    color: #0366d6;
 }
 
 .timeline-item p {
-    font-size: 1rem;  /* Slightly larger description font */
+    font-size: 1rem;
     color: #444;
     line-height: 1.6;
+    margin-bottom: 5px;
 }
 
-.timeline-item h3, .timeline-item strong {
-    color: #333;  /* Darker title and bold text */
+.timeline-item strong {
+    color: #333;
+    font-weight: 600;
 }
 
-/* Styling for projects */
-.project-grid {
-    display: flex;
-    gap: 20px;
+/* Hover effect for timeline items */
+.timeline-item:hover::before {
+    background-color: #0366d6;
 }
 
-.project-card {
-    border: 1px solid #ddd;
-    padding: 15px;
-    border-radius: 8px;
-    flex: 1;
-    transition: box-shadow 0.3s ease;
+.timeline-item:hover h3 {
+    color: #05a;
 }
 
-.project-card:hover {
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .timeline {
+        padding-left: 20px;
+    }
+    
+    .timeline-item {
+        padding-left: 15px;
+    }
 }
