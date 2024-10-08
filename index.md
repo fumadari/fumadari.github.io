@@ -25,22 +25,19 @@ Relevant Coursework: Deep Learning, Machine Learning and Big Data, Real Analysis
 
 ## Experience Highlights
 
+## Experience Highlights
+
 ### Amazon Web Services (AWS)
 *Solutions Architect – Prototyping Team* (2023 - Present)
-- Engineered cloud-based prototypes for advanced bioinformatics workflows
-- Maintained a drug discovery workbench utilizing open-source protein folding models
-- Designed a RAG-based retrieval system achieving 90% recall on 1.5M documents
+Developed cloud-based AI solutions for bioinformatics, including a RAG-based retrieval system with 90% recall on 1.5M documents and a protein folding workbench, demonstrating expertise in large-scale AI deployment and optimization.
 
 ### Amazon Science
 *Research Assistant* (2023 - Present)
-- Conducted experiments on clustering algorithms for optimizing cloud databases
-- Applied advanced mathematical techniques like discrete cosine transforms to reduce search space complexity
-- Collaborated on the development of distributed storage systems, replacing AWS legacy services
+Conducted research on clustering algorithms for cloud databases, applying advanced mathematical techniques like discrete cosine transforms to optimize high-dimensional search spaces, contributing to the development of next-generation distributed storage systems.
 
 ### Williams Investment Society
 *Financial Researcher, Technology* (2020 - 2022)
-- Led a team managing a $5.5M tech sector portfolio within a larger $20M endowment
-- Applied quantitative analysis and financial modeling for investment strategies
+Led quantitative analysis for a $5.5M tech sector portfolio, applying machine learning and statistical models to financial data, honing skills in data-driven decision making and predictive modeling.
 
 ## Selected Projects
 
