@@ -24,13 +24,13 @@ Relevant Coursework: Deep Learning, Machine Learning and Big Data, Real Analysis
 
 ## Experience Highlights
 
-### Amazon Web Services (AWS) - Prototyping Architect
+#### Amazon Web Services (AWS) - Prototyping Architect
 Developed cloud-based AI solutions for bioinformatics, including a RAG-based retrieval system with 90% recall on 1.5M documents and a protein folding workbench, demonstrating expertise in large-scale AI deployment and optimization.
 
-### Amazon Science - Research Assistant
+#### Amazon Science - Research Assistant
 Conducted research on clustering algorithms for cloud databases, applying advanced mathematical techniques like discrete cosine transforms to optimize high-dimensional search spaces, contributing to the development of next-generation distributed storage systems.
 
-### Williams Investment Society - Financial Researcher
+#### Williams Investment Society - Financial Researcher
 Led quantitative analysis for a $5.5M tech sector portfolio, applying machine learning and statistical models to financial data, honing skills in data-driven decision making and predictive modeling.
 
 ## Selected Projects
