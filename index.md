@@ -33,7 +33,7 @@ Developed cloud-based AI solutions for bioinformatics, including a RAG-based ret
 Conducted research on clustering algorithms for cloud databases, and optimizing search in high-dimensional vector spaces, contributing to the development of next-generation distributed storage systems.
 
 
-- **Williams Investment Society - Financial Researcher**
+- **Williams Investment Society - Financial Researcher**:
 Led quantitative analysis for a $5.5M tech sector portfolio, applying machine learning and statistical models to financial data.
 
 ### Selected Projects
