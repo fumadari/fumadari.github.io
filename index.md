@@ -4,16 +4,17 @@ layout: default
 
 # About Me
 
-Hey! I'm Dario, a Computer Science and Mathematics graduate from Washington and Lee University, originally from a [charming village in Italy](https://en.wikipedia.org/wiki/Your_Village_Name). I curren
+Hey! I’m Dario, a Computer Science and Mathematics graduate from Washington and Lee University. Originally from a [small village in Italy](https://en.wikipedia.org/wiki/Your_Village_Name), I’m currently working as a Prototype Architect for Amazon Web Services in New York City, where I focus on designing innovative solutions that leverage the latest in cloud and AI technologies.
 
-My passion lies in exploring the intricate mathematics underpinning artificial intelligence, focusing on making AI more interpretable and ethically sound. I believe that by deepening our understanding of the mathematical foundations of AI, we can create more robust, transparent, and beneficial AI systems for society.
+My current focus centers on the mathematical optimization and interpretability of deep learning models, particularly in the areas of representation learning and causality within AI systems. I am deeply interested in researching how advanced AI models can be made more interpretable, reliable, and ethically aligned, ensuring that their deployment in critical areas is transparent and beneficial to society.
 
 ## Research Interests
 
-- **Interpretable AI**: Developing mathematical frameworks to enhance the explainability of deep learning models
-- **Ethical AI**: Exploring the intersection of mathematics, computer science, and ethics in AI decision-making processes
-- **Geometric Deep Learning**: Applying differential geometry concepts to improve neural network architectures
-- **Cloud-Based AI Systems**: Optimizing large-scale AI deployments in distributed cloud environments
+- **Interpretable AI**: Developing models using Shapley values, mutual information, and causal inference to quantify feature importance and enhance model transparency.
+- **Ethical AI**: Applying probabilistic models and optimization techniques to enforce fairness constraints in decision-making algorithms.
+- **Geometric Deep Learning**: Using differential geometry (manifold learning, Lie groups) and graph neural networks to handle non-Euclidean data in deep learning.
+- **Cloud-Based AI**: Optimizing distributed AI training through parallelization, dynamic resource allocation, and fault-tolerant architectures in large-scale cloud environments.
+
 
 ## Education
 
