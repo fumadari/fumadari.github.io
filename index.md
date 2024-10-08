@@ -10,7 +10,7 @@ My current focus centers on the mathematical optimization and interpretability o
 
 ## Research Interests
 
-- **Interpretable AI**: Developing models using Shapley values, mutual information, and causal inference to quantify feature importance and enhance model transparency.
+- **Interpretable AI**: Using Shapley values, mutual information, and causal inference to quantify feature importance and enhance model transparency.
 - **Ethical AI**: Applying probabilistic models and optimization techniques to enforce fairness constraints in decision-making algorithms.
 - **Geometric Deep Learning**: Using differential geometry manifold learning, Lie groups, and graph neural networks to handle non-Euclidean data in deep learning.
 - **Cloud-Based AI**: Optimizing distributed AI training through parallelization, dynamic resource allocation, and fault-tolerant architectures in large-scale cloud environments.
