@@ -6,7 +6,7 @@ layout: default
 
 Hey! I’m Dario, a Computer Science and Mathematics graduate from Washington and Lee University. Originally from a [small village in Italy](https://en.wikipedia.org/wiki/Your_Village_Name), I’m currently working as a Prototype Architect for Amazon Web Services in New York City, where I focus on designing innovative solutions that leverage the latest in cloud and AI technologies.
 
-My current focus centers on the mathematical optimization and interpretability of deep learning models, particularly in the areas of representation learning and causality within AI systems. I am deeply interested in researching how advanced AI models can be made more interpretable, reliable, and ethically aligned, ensuring that their deployment in critical areas is transparent and beneficial to society.
+My current focus centers on the mathematical optimization and interpretability of deep learning models, particularly regarding representation learning and causality within AI systems. I am deeply interested in researching how advanced AI models can be made more interpretable, reliable, and ethically aligned, ensuring their deployment stays transparent and beneficial to society.
 
 ## Research Interests
 
@@ -19,7 +19,7 @@ My current focus centers on the mathematical optimization and interpretability o
 ## Education
 
 **Washington and Lee University** (2019 - 2023)  
-B.S. in Computer Science and Mathematics  
+Computer Science and Mathematics  
 *Davis Scholar*
 
 Relevant Coursework: Deep Learning, Machine Learning and Big Data, Real Analysis, Network Security, Differential Geometry
@@ -62,4 +62,4 @@ I'm always eager to discuss research opportunities or collaborate on interesting
 
 Email: [dariofumarola90@gmail.com](mailto:dariofumarola90@gmail.com)  
 LinkedIn: [Dario Fumarola](https://www.linkedin.com/in/your-profile)  
-GitHub: [fumadari](https://github.com/fumadari)
+GitHub: [fumadari](https://github.com/fumarolad)
