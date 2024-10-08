@@ -4,37 +4,61 @@ layout: default
 
 # About Me
 
-Hello! I'm a Ph.D. student at [Carnegie Mellon University](https://www.cmu.edu/)'s [Language Technologies Institute](https://lti.cs.cmu.edu/). My research focuses on natural language processing and machine learning, with a particular interest in [your specific interests].
+Hey! I'm Dario, a Computer Science and Mathematics graduate from Washington and Lee University, originally from a [charming village in Italy](https://en.wikipedia.org/wiki/Your_Village_Name). I curren
 
-## Education
-
-- **Ph.D. in Computer Science**, Carnegie Mellon University, 2024 - Present
-- **M.S. in Artificial Intelligence**, KAIST, 2023 - 2024
-- **B.S. in Computer Science**, Yonsei University, 2018 - 2023
+My passion lies in exploring the intricate mathematics underpinning artificial intelligence, focusing on making AI more interpretable and ethically sound. I believe that by deepening our understanding of the mathematical foundations of AI, we can create more robust, transparent, and beneficial AI systems for society.
 
 ## Research Interests
 
-- Natural Language Processing
-- Machine Learning
-- [Add more specific research interests]
+- **Interpretable AI**: Developing mathematical frameworks to enhance the explainability of deep learning models
+- **Ethical AI**: Exploring the intersection of mathematics, computer science, and ethics in AI decision-making processes
+- **Geometric Deep Learning**: Applying differential geometry concepts to improve neural network architectures
+- **Cloud-Based AI Systems**: Optimizing large-scale AI deployments in distributed cloud environments
 
-## Publications
+## Education
 
-1. **Paper Title**, Conference/Journal Name, Year
-   Authors: [Your Name], Co-author 1, Co-author 2
-   [Link to paper](#)
+**Washington and Lee University** (2019 - 2023)  
+B.S. in Computer Science and Mathematics  
+*Davis Scholar*
 
-2. **Another Paper Title**, Conference/Journal Name, Year
-   Authors: Co-author 1, [Your Name], Co-author 2
-   [Link to paper](#)
+Relevant Coursework: Deep Learning, Machine Learning and Big Data, Real Analysis, Network Security, Differential Geometry
 
-## Projects
+## Experience Highlights
 
-- **Project Name**: Brief description of the project and your role. [Link to project](#)
-- **Another Project**: Description of another significant project. [Link to project](#)
+### Amazon Web Services (AWS)
+*Solutions Architect – Prototyping Team* (2023 - Present)
+- Engineered cloud-based prototypes for advanced bioinformatics workflows
+- Maintained a drug discovery workbench utilizing open-source protein folding models
+- Designed a RAG-based retrieval system achieving 90% recall on 1.5M documents
+
+### Amazon Science
+*Research Assistant* (2023 - Present)
+- Conducted experiments on clustering algorithms for optimizing cloud databases
+- Applied advanced mathematical techniques like discrete cosine transforms to reduce search space complexity
+- Collaborated on the development of distributed storage systems, replacing AWS legacy services
+
+### Williams Investment Society
+*Group Head, Technology* (2020 - 2022)
+- Led a team managing a $5.5M tech sector portfolio within a larger $20M endowment
+- Applied quantitative analysis and financial modeling for investment strategies
+
+## Selected Projects
+
+### S3 Distributed Vector Index
+- Developed a high-performance cloud indexing system, leveraging S3 parallelism
+- Implemented advanced mathematical concepts to ensure 90% recall and sub-second latency
+
+### Graph Attention Network for Drug Molecule Analysis
+- Created a multi-head GAT achieving 91% accuracy in predicting molecular properties
+- Applied graph theory and attention mechanisms to molecular datasets
+
+
+[Download CV](./assets/cv/dario_fumarola_cv.pdf)
 
 ## Contact
 
-Feel free to reach out to me at [your.email@example.com](mailto:your.email@example.com) or connect with me on [LinkedIn](https://www.linkedin.com/in/your-profile).
+I'm always eager to discuss research opportunities or collaborate on interesting projects. Feel free to reach out!
 
-[Download CV](./assets/cv/your_cv.pdf)
+Email: [dariofumarola90@gmail.com](mailto:dariofumarola90@gmail.com)  
+LinkedIn: [Dario Fumarola](https://www.linkedin.com/in/your-profile)  
+GitHub: [fumadari](https://github.com/fumadari)
