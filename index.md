@@ -36,6 +36,9 @@ Conducted research on clustering algorithms for cloud databases, and optimizing 
 - **Williams Investment Society - Financial Researcher**:
 Led quantitative analysis for a $5.5M tech sector portfolio, applying machine learning and statistical models to financial data.
 
+-- **Professional Affiliations**: Institute of Electrical and Electronics Engineers (IEEE); Association for Computing Machinery (ACM)
+
+
 ### Selected Projects
 
 #### [S3 Distributed Vector Index](https://en.wikipedia.org/wiki/Cisternino)
