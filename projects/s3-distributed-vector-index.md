@@ -30,6 +30,8 @@ The **S3 Distributed Vector Index** is a cutting-edge cloud indexing system desi
 
 ## Hierarchical Index Visualization
 
+This visualization demonstrates the hierarchical structure of the index, showing how data is partitioned into clusters with centroids and how leaves are stored in S3.
+
 <button id="simulate-query">Simulate Query</button>
 
 {% raw %}
@@ -42,9 +44,9 @@ The **S3 Distributed Vector Index** is a cutting-edge cloud indexing system desi
 <!-- Visualization Script -->
 <script>
 // Set the dimensions and margins
-var margin = {top: 20, right: 120, bottom: 20, left: 120},
-    width = 960 - margin.left - margin.right,
-    height = 600 - margin.top - margin.bottom;
+var margin = {top: 20, right: 90, bottom: 30, left: 90},
+    width = 660 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
 
 // Append the SVG object
 var svg = d3.select("#hierarchical-index").append("svg")
@@ -53,57 +55,151 @@ var svg = d3.select("#hierarchical-index").append("svg")
   g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 // Create the tree layout
-var tree = d3.tree().size([height, width]);
+var treemap = d3.tree().size([height, width]);
+
+var i = 0,
+    duration = 750,
+    root;
 
 // Load the data
 d3.json("{{ '/assets/data/hierarchical_index.json' | relative_url }}").then(function(data) {
-  var root = d3.hierarchy(data);
+  root = d3.hierarchy(data, function(d) { return d.children; });
+  root.x0 = height / 2;
+  root.y0 = 0;
+
+  // Collapse after the second level
+  // root.children.forEach(collapse);
+
   update(root);
 });
 
 function update(source) {
-  var treeData = tree(source);
+  // Assigns the x and y position for the nodes
+  var treeData = treemap(root);
+
+  // Compute the new tree layout.
   var nodes = treeData.descendants(),
       links = treeData.links();
 
-  // Normalize for fixed-depth
-  nodes.forEach(function(d){ d.y = d.depth * 180; });
+  // Normalize for fixed-depth.
+  nodes.forEach(function(d){ d.y = d.depth * 180});
 
-  // Nodes section
-  var node = g.selectAll('.node')
+  // ****************** Nodes section ***************************
+
+  // Update the nodes...
+  var node = g.selectAll('g.node')
       .data(nodes, function(d) { return d.id || (d.id = ++i); });
 
+  // Enter any new modes at the parent's previous position.
   var nodeEnter = node.enter().append('g')
-      .attr('class', function(d) { return 'node' + (d.children ? ' node--internal' : ' node--leaf'); })
-      .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
+      .attr('class', function(d) {
+          return 'node' + (d.children ? ' node--internal' : ' node--leaf');
+      })
+      .attr("transform", function(d) {
+          return "translate(" + source.y0 + "," + source.x0 + ")";
+      });
 
+  // Add Circle for the nodes
   nodeEnter.append('circle')
+      .attr('class', 'node')
       .attr('r', 10)
       .style("fill", function(d) {
-        if (d.data.centroid) return "orange"; // Centroid nodes
-        else if (d.children || d._children) return "steelblue"; // Internal nodes
-        else return "lightsteelblue"; // Leaf nodes
+          if (d.data.centroid) return "orange"; // Centroid nodes
+          else if (d.children || d._children) return "#fff"; // Internal nodes
+          else return "lightsteelblue"; // Leaf nodes
       });
 
+  // Add labels for the nodes
   nodeEnter.append('text')
-      .attr("dy", 3)
-      .attr("x", function(d) { return d.children || d._children ? -15 : 15; })
-      .style("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
+      .attr("dy", ".35em")
+      .attr("x", function(d) {
+          return d.children || d._children ? -13 : 13;
+      })
+      .attr("text-anchor", function(d) {
+          return d.children || d._children ? "end" : "start";
+      })
       .text(function(d) {
-        if (d.data.centroid) return d.data.name + " (Centroid)";
-        else if (!d.children && !d._children) return d.data.name + " (S3)";
-        else return d.data.name;
+          if (d.data.centroid) return d.data.name + " (Centroid)";
+          else if (!d.children && !d._children) return d.data.name + " (S3)";
+          else return d.data.name;
       });
 
-  // Links section
-  var link = g.selectAll('.link')
+  // UPDATE
+  var nodeUpdate = nodeEnter.merge(node);
+
+  // Transition to the proper position for the node
+  nodeUpdate.transition()
+      .duration(duration)
+      .attr("transform", function(d) {
+          return "translate(" + d.y + "," + d.x + ")";
+      });
+
+  // Update the node attributes and style
+  nodeUpdate.select('circle.node')
+      .attr('r', 10);
+
+  // Remove any exiting nodes
+  var nodeExit = node.exit().transition()
+      .duration(duration)
+      .attr("transform", function(d) {
+          return "translate(" + source.y + "," + source.x + ")";
+      })
+      .remove();
+
+  // On exit reduce the node circles size to 0
+  nodeExit.select('circle')
+      .attr('r', 1e-6);
+
+  // On exit reduce the opacity of text labels
+  nodeExit.select('text')
+      .style('fill-opacity', 1e-6);
+
+  // ****************** links section ***************************
+
+  // Update the links...
+  var link = g.selectAll('path.link')
       .data(links, function(d) { return d.target.id; });
 
-  link.enter().insert('path', "g")
+  // Enter any new links at the parent's previous position.
+  var linkEnter = link.enter().insert('path', "g")
       .attr("class", "link")
-      .attr('d', d3.linkHorizontal()
-          .x(function(d) { return d.y; })
-          .y(function(d) { return d.x; }));
+      .attr('d', function(d){
+        var o = {x: source.x0, y: source.y0}
+        return diagonal(o, o)
+      });
+
+  // UPDATE
+  var linkUpdate = linkEnter.merge(link);
+
+  // Transition back to the parent element position
+  linkUpdate.transition()
+      .duration(duration)
+      .attr('d', function(d){ return diagonal(d.source, d.target) });
+
+  // Remove any exiting links
+  var linkExit = link.exit().transition()
+      .duration(duration)
+      .attr('d', function(d) {
+        var o = {x: source.x, y: source.y}
+        return diagonal(o, o)
+      })
+      .remove();
+
+  // Store the old positions for transition.
+  nodes.forEach(function(d){
+    d.x0 = d.x;
+    d.y0 = d.y;
+  });
+
+  // Creates a curved (diagonal) path from parent to the child nodes
+  function diagonal(s, d) {
+    var path = `M ${s.y} ${s.x}
+            C ${(s.y + d.y) / 2} ${s.x},
+              ${(s.y + d.y) / 2} ${d.x},
+              ${d.y} ${d.x}`;
+
+    return path;
+  }
 }
 
 document.getElementById('simulate-query').addEventListener('click', simulateQuery);
@@ -117,26 +213,23 @@ function simulateQuery() {
   var queryVector = [/* query vector values */];
 
   // Find the closest centroid
-  d3.json("{{ '/assets/data/hierarchical_index.json' | relative_url }}").then(function(data) {
-    var root = d3.hierarchy(data);
-    var closestCentroidNode = findClosestCentroid(root, queryVector);
+  var closestCentroidNode = findClosestCentroid(root, queryVector);
 
-    // Highlight the path to the closest centroid
-    highlightPath(closestCentroidNode);
+  // Highlight the path to the closest centroid
+  highlightPath(closestCentroidNode);
 
-    // Simulate parallel retrieval of leaves
-    if (closestCentroidNode.children) {
-      closestCentroidNode.children.forEach(function(leafNode) {
-        svg.selectAll('circle').filter(function(d) { return d === leafNode; })
-          .classed('highlighted', true);
-      });
-    }
-  });
+  // Simulate parallel retrieval of leaves
+  if (closestCentroidNode.children) {
+    closestCentroidNode.children.forEach(function(leafNode) {
+      svg.selectAll('circle').filter(function(d) { return d === leafNode; })
+        .classed('highlighted', true);
+    });
+  }
 }
 
 function findClosestCentroid(node, queryVector) {
-  // For simplicity, return the first centroid node (implement actual logic here)
-  return node.children[0]; // Modify this to find the actual closest centroid
+  // For demonstration purposes, we select the first centroid
+  return node.children ? node.children[0] : node;
 }
 
 function highlightPath(node) {
@@ -155,6 +248,7 @@ function highlightPath(node) {
 <!-- Visualization Styles -->
 <style>
 .node circle {
+  fill: #fff;
   stroke: steelblue;
   stroke-width: 1.5px;
 }
