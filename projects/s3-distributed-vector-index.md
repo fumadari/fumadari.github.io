@@ -30,9 +30,7 @@ The **S3 Distributed Vector Index** is a cutting-edge cloud indexing system desi
 
 ## Hierarchical Index Visualization
 
-This visualization demonstrates the hierarchical structure of the index, showing how data is partitioned into clusters with centroids and how leaves are stored in S3.
-
-<button id="simulate-query">Simulate Query</button>
+This visualization illustrates the hierarchical structure of the index, showing how data is partitioned into clusters with centroids and how leaves are stored in S3.
 
 {% raw %}
 <!-- Visualization Container -->
@@ -57,25 +55,17 @@ var svg = d3.select("#hierarchical-index").append("svg")
 // Create the tree layout
 var treemap = d3.tree().size([height, width]);
 
-var i = 0,
-    duration = 750,
-    root;
+var i = 0;
 
 // Load the data
 d3.json("{{ '/assets/data/hierarchical_index.json' | relative_url }}").then(function(data) {
-  root = d3.hierarchy(data, function(d) { return d.children; });
-  root.x0 = height / 2;
-  root.y0 = 0;
-
-  // Collapse after the second level
-  // root.children.forEach(collapse);
+  var root = d3.hierarchy(data, function(d) { return d.children; });
 
   update(root);
 });
 
 function update(source) {
-  // Assigns the x and y position for the nodes
-  var treeData = treemap(root);
+  var treeData = treemap(source);
 
   // Compute the new tree layout.
   var nodes = treeData.descendants(),
@@ -90,13 +80,13 @@ function update(source) {
   var node = g.selectAll('g.node')
       .data(nodes, function(d) { return d.id || (d.id = ++i); });
 
-  // Enter any new modes at the parent's previous position.
+  // Enter any new nodes at the correct position.
   var nodeEnter = node.enter().append('g')
       .attr('class', function(d) {
           return 'node' + (d.children ? ' node--internal' : ' node--leaf');
       })
       .attr("transform", function(d) {
-          return "translate(" + source.y0 + "," + source.x0 + ")";
+          return "translate(" + d.y + "," + d.x + ")";
       });
 
   // Add Circle for the nodes
@@ -105,7 +95,7 @@ function update(source) {
       .attr('r', 10)
       .style("fill", function(d) {
           if (d.data.centroid) return "orange"; // Centroid nodes
-          else if (d.children || d._children) return "#fff"; // Internal nodes
+          else if (d.children) return "#fff"; // Internal nodes
           else return "lightsteelblue"; // Leaf nodes
       });
 
@@ -113,135 +103,37 @@ function update(source) {
   nodeEnter.append('text')
       .attr("dy", ".35em")
       .attr("x", function(d) {
-          return d.children || d._children ? -13 : 13;
+          return d.children ? -13 : 13;
       })
       .attr("text-anchor", function(d) {
-          return d.children || d._children ? "end" : "start";
+          return d.children ? "end" : "start";
       })
       .text(function(d) {
           if (d.data.centroid) return d.data.name + " (Centroid)";
-          else if (!d.children && !d._children) return d.data.name + " (S3)";
+          else if (!d.children) return d.data.name + " (S3)";
           else return d.data.name;
       });
 
-  // UPDATE
-  var nodeUpdate = nodeEnter.merge(node);
-
-  // Transition to the proper position for the node
-  nodeUpdate.transition()
-      .duration(duration)
-      .attr("transform", function(d) {
-          return "translate(" + d.y + "," + d.x + ")";
-      });
-
-  // Update the node attributes and style
-  nodeUpdate.select('circle.node')
-      .attr('r', 10);
-
-  // Remove any exiting nodes
-  var nodeExit = node.exit().transition()
-      .duration(duration)
-      .attr("transform", function(d) {
-          return "translate(" + source.y + "," + source.x + ")";
-      })
-      .remove();
-
-  // On exit reduce the node circles size to 0
-  nodeExit.select('circle')
-      .attr('r', 1e-6);
-
-  // On exit reduce the opacity of text labels
-  nodeExit.select('text')
-      .style('fill-opacity', 1e-6);
-
-  // ****************** links section ***************************
+  // ****************** Links section ***************************
 
   // Update the links...
   var link = g.selectAll('path.link')
       .data(links, function(d) { return d.target.id; });
 
-  // Enter any new links at the parent's previous position.
-  var linkEnter = link.enter().insert('path', "g")
+  // Enter any new links at the correct position.
+  link.enter().insert('path', "g")
       .attr("class", "link")
       .attr('d', function(d){
-        var o = {x: source.x0, y: source.y0}
-        return diagonal(o, o)
+        return diagonal(d);
       });
-
-  // UPDATE
-  var linkUpdate = linkEnter.merge(link);
-
-  // Transition back to the parent element position
-  linkUpdate.transition()
-      .duration(duration)
-      .attr('d', function(d){ return diagonal(d.source, d.target) });
-
-  // Remove any exiting links
-  var linkExit = link.exit().transition()
-      .duration(duration)
-      .attr('d', function(d) {
-        var o = {x: source.x, y: source.y}
-        return diagonal(o, o)
-      })
-      .remove();
-
-  // Store the old positions for transition.
-  nodes.forEach(function(d){
-    d.x0 = d.x;
-    d.y0 = d.y;
-  });
-
-  // Creates a curved (diagonal) path from parent to the child nodes
-  function diagonal(s, d) {
-    var path = `M ${s.y} ${s.x}
-            C ${(s.y + d.y) / 2} ${s.x},
-              ${(s.y + d.y) / 2} ${d.x},
-              ${d.y} ${d.x}`;
-
-    return path;
-  }
 }
 
-document.getElementById('simulate-query').addEventListener('click', simulateQuery);
-
-function simulateQuery() {
-  // Reset styles
-  svg.selectAll('circle').classed('highlighted', false);
-  svg.selectAll('path.link').classed('highlighted', false);
-
-  // Define the query vector (for demonstration)
-  var queryVector = [/* query vector values */];
-
-  // Find the closest centroid
-  var closestCentroidNode = findClosestCentroid(root, queryVector);
-
-  // Highlight the path to the closest centroid
-  highlightPath(closestCentroidNode);
-
-  // Simulate parallel retrieval of leaves
-  if (closestCentroidNode.children) {
-    closestCentroidNode.children.forEach(function(leafNode) {
-      svg.selectAll('circle').filter(function(d) { return d === leafNode; })
-        .classed('highlighted', true);
-    });
-  }
-}
-
-function findClosestCentroid(node, queryVector) {
-  // For demonstration purposes, we select the first centroid
-  return node.children ? node.children[0] : node;
-}
-
-function highlightPath(node) {
-  while (node) {
-    svg.selectAll('circle').filter(function(d) { return d === node; })
-      .classed('highlighted', true);
-    if (node.parent) {
-      svg.selectAll('path.link').filter(function(d) { return d.target === node; })
-        .classed('highlighted', true);
-    }
-    node = node.parent;
-  }
+// Creates a curved (diagonal) path from parent to the child nodes
+function diagonal(d) {
+  return "M" + d.source.y + "," + d.source.x
+       + "C" + (d.source.y + d.target.y) / 2 + "," + d.source.x
+       + " " + (d.source.y + d.target.y) / 2 + "," + d.target.x
+       + " " + d.target.y + "," + d.target.x;
 }
 </script>
 
@@ -265,14 +157,6 @@ function highlightPath(node) {
   fill: none;
   stroke: #555;
   stroke-width: 2px;
-}
-.node circle.highlighted {
-  stroke: red;
-  stroke-width: 3px;
-}
-.link.highlighted {
-  stroke: red;
-  stroke-width: 3px;
 }
 </style>
 {% endraw %}
