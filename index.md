@@ -41,7 +41,7 @@ Led quantitative analysis for a $5.5M tech sector portfolio, applying machine le
 
 ### Selected Projects
 
-#### [S3 Distributed Vector Index](./projects/s3-distributed-vector-index.html)
+#### [S3 Distributed Vector Index](./projects/s3-distributed-vector-index.md)
 Engineered a novel cloud indexing system using S3 parallelism, outperforming DiskANN. Implemented hierarchical clustering with HNSW graphs, achieving 90% recall at sub-second latency for billion-scale vector datasets.
 
 #### [Graph Attention Network for Drug Molecule Analysis](https://en.wikipedia.org/wiki/Cisternino)
