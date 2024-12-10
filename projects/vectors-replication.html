@@ -40,7 +40,7 @@
 
 <div class="abstract">
     <h2>Abstract</h2>
-    <p>The k-nearest neighbors (k-NN) search is a fundamental operation in high-dimensional data processing, crucial for information retrieval, machine learning, and recommendation systems. This research introduces a novel selective vector replication method that significantly enhances k-NN search performance. By focusing on boundary vectors—those whose nearest neighbors span multiple clusters—we address the fundamental challenge where traditional clustering disperses nearest neighbors across multiple partitions. Our method formulates vector replication as an optimization problem that balances recall improvement against computational costs, leading to a practical solution that enhances both recall and query efficiency. Experimental results demonstrate substantial improvements over existing approaches, achieving up to 62.2% reduction in vectors accessed while maintaining 0.95 recall on large-scale datasets. These findings confirm that selective replication of boundary vectors captures most potential efficiency gains with modest storage overhead.</p>
+    <p>The k-nearest neighbors (k-NN) search is a fundamental operation in high-dimensional data processing, crucial for information retrieval, machine learning, and recommendation systems. This research introduces a novel selective vector replication method significantly enhancing k-NN search performance. By focusing on boundary vectors—those whose nearest neighbors span multiple clusters—we address the fundamental challenge where traditional clustering disperses nearest neighbors across multiple partitions. Our method formulates vector replication as an optimization problem that balances recall improvement against computational costs, leading to a practical solution that enhances both recall and query efficiency. Experimental results demonstrate substantial improvements over existing approaches, achieving up to 62.2% reduction in vectors accessed while maintaining 0.95 recall on large-scale datasets. These findings confirm that selective replication of boundary vectors captures most potential efficiency gains with modest storage overhead.</p>
 </div>
 
 
@@ -64,9 +64,9 @@
 </div>
     
 <h2>2. Related Work</h2>
-<p>Various clustering methods, including soft clustering approaches [bezdek1981pattern], have been developed to assign vectors to multiple clusters. Soft clustering allows vectors to belong to multiple clusters with varying degrees of membership, capturing the inherent ambiguity in data assignment. These methods are typically designed in unsupervised learning and data mining, where the primary objective is to optimize representation quality and cohesion, similar to k-means clustering.</p>
+<p>Various clustering methods, including soft clustering approaches, have been developed to assign vectors to multiple clusters. Soft clustering allows vectors to belong to multiple clusters with varying degrees of membership, capturing the inherent ambiguity in data assignment. These methods are typically designed in unsupervised learning and data mining, where the primary objective is to optimize representation quality and cohesion, similar to k-means clustering.</p>
 
-<p>For approximate k-NN search, the primary goals shift towards maximizing recall and minimizing query time. Replication methods in recent solutions, such as SPANN [2], also follow approaches that prioritize representation quality. However, the replication is guided by distance-based data distribution characteristics rather than being directly optimized for k-NN recall and query efficiency.</p>
+<p>For approximate k-NN search, the primary goals shift towards maximizing recall and minimizing query time. Replication methods in recent solutions, such as SPANN, also follow approaches that prioritize representation quality. However, the replication is guided by distance-based data distribution characteristics rather than being directly optimized for k-NN recall and query efficiency.</p>
 
 <p>A more aligned approach for k-NN search would be replicating the k-nearest neighbors of all possible query vectors within a cluster. While minimizing the clusters necessary to probe, this strategy may lead to excessively large overhead storage, increasing the number of vectors that need to be processed during queries.</p>
 
@@ -433,6 +433,33 @@ Output: Replication set T
 </div>
 
 <p>In summary, our selective vector replication method offers a practical and theoretically grounded solution to enhance k-NN search performance in high-dimensional spaces. By strategically replicating vectors based on boundary analysis and optimization, we achieve significant improvements in both recall and query efficiency. The method's flexibility allows for various extensions, such as incorporating diversity and adjusting for cluster-specific costs, which can further enhance its applicability and performance. Future work will focus on exploring these extensions and addressing current limitations, aiming to develop a comprehensive framework for efficient and accurate similarity search in high-dimensional data.</p>
+
+
+<h2>References</h2>
+<div class="references" style="padding-left: 2em; text-indent: -2em;">
+    <p>Bezdek, J. C. (1981). Pattern Recognition with Fuzzy Objective Function Algorithms. Springer Science & Business Media.</p>
+    
+    <p>Li, J., Sun, W., Zhu, Y., Xiao, F., Li, H., Lin, Q., Luo, D., & Yang, J. (2020). SPANN: Highly Scalable Billion-Scale Approximate Nearest Neighbor Search. Proceedings of the VLDB Endowment, 13(9), 1359-1371.</p>
+    
+    <p>Su, Y., Sun, Y., Zhang, M., & Wang, J. (2024). Vexless: A Serverless Vector Data Management System Using Cloud Functions. Proceedings of the ACM on Management of Data (SIGMOD), 2(3), 187:1-187:26.</p>
+    
+    <p>Jégou, H., Douze, M., & Schmid, C. (2011). Product quantization for nearest neighbor search. IEEE Transactions on Pattern Analysis and Machine Intelligence, 33(1), 117-128.</p>
+    
+    <p>Malkov, Y. A., & Yashunin, D. A. (2020). Efficient and robust approximate nearest neighbor search using Hierarchical Navigable Small World graphs. IEEE Transactions on Pattern Analysis and Machine Intelligence, 42(4), 824-836.</p>
+    
+    <p>Subramanya, A., Pendyala, R. P., Sabharwal, A., & Varma, M. (2019). DiskANN: Fast accurate billion-point nearest neighbor search on a single node. Advances in Neural Information Processing Systems, 32, 13745-13755.</p>
+    
+    <p>Kulesza, A., & Taskar, B. (2012). Determinantal point processes for machine learning. Foundations and Trends in Machine Learning, 5(2-3), 123-286.</p>
+    
+    <p>Schuhmann, C., et al. (2021). LAION-400M: Open Dataset of CLIP-Filtered 400 Million Image-Text Pairs. arXiv preprint arXiv:2111.02114.</p>
+    
+    <p>MacQueen, J. (1967). Some methods for classification and analysis of multivariate observations. Proceedings of the Fifth Berkeley Symposium on Mathematical Statistics and Probability, 1, 281-297.</p>
+    
+    <p>Korte, B., & Vygen, J. (2008). Combinatorial Optimization: Theory and Algorithms (5th ed.). Springer.</p>
+    
+    <p>Nemhauser, G. L., Wolsey, L. A., & Fisher, M. L. (1978). An analysis of approximations for maximizing submodular set functions—I. Mathematical Programming, 14(1), 265-294.</p>
+</div>
+
     
 </body>
 </html>
