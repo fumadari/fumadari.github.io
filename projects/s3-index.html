@@ -59,6 +59,11 @@
 
 <p>Cloud object stores, particularly Amazon S3, offer unique characteristics that both challenge and enable new approaches to vector search. Traditional vector indices, designed for disk-based systems, assume low-latency random access patterns that become prohibitively expensive in cloud environments. However, S3's ability to handle high-throughput parallel requests opens new possibilities for index organization and query optimization that remain largely unexplored in current literature.</p>
 
+<h3>1.1 Related Work</h3>
+<p>
+    Vector search systems have evolved significantly in recent years, with several approaches addressing distributed search challenges. FAISS introduced GPU-accelerated similarity search and basic clustering-based distribution strategies. Microsoft's DiskANN demonstrated efficient disk-based vector search through hybrid storage architectures. Milvus proposed a cloud-native vector database architecture, though primarily focused on traditional distributed system patterns. Recent work on ScaNN explored quantization and partitioning strategies for billion-scale similarity search. Our approach builds upon these foundations while specifically addressing the unique characteristics of cloud object stores, particularly S3's parallel access patterns and latency profile. Unlike previous work that adapted traditional indices to distributed environments, our system is architected from the ground up for cloud-native deployment, with novel partitioning strategies optimized for object store access patterns.
+</p>    
+
 <p>Our research introduces a novel approach that reconceptualizes vector search for cloud environments through hierarchical graph partitioning. The key insight is that by carefully partitioning an HNSW graph into optimally sized subgraphs and storing them as individual S3 objects, we can leverage parallel retrieval to minimize query latency while maintaining high recall. This partitioning strategy is guided by two fundamental constraints: the minimum partition size needed to maintain search quality and the maximum size that enables efficient S3 retrieval.</p>
 
 <p>The system architecture employs a three-level hierarchy: a lightweight manifest layer that maintains partition metadata, a routing layer that identifies relevant partitions for queries, and leaf nodes containing HNSW subgraphs optimized for S3 retrieval. This design achieves three critical objectives: minimizing the number of S3 requests per query, enabling efficient parallel retrieval of relevant partitions, and maintaining high recall through careful graph partitioning.</p>
@@ -95,11 +100,11 @@ style Q fill:#bfb,stroke:#333
 
 <h3>2.1 Hierarchical Organization</h3>
 
-<p>The index hierarchy consists of three primary components: a manifest layer, routing layer, and leaf nodes. The manifest layer maintains a compact representation of partition metadata, including partition boundaries and S3 object locations. This layer is designed to be small enough to cache entirely in memory, enabling rapid partition identification during query processing. The routing layer implements an efficient clustering mechanism that maps incoming query vectors to relevant partitions while minimizing the number of necessary partition retrievals.</p>
+<p>The index hierarchy consists of three primary components: a manifest layer, a routing layer, and leaf nodes. The manifest layer maintains a compact representation of partition metadata, including partition boundaries and S3 object locations. This layer is designed to be small enough to cache entirely in memory, enabling rapid partition identification during query processing. The routing layer implements an efficient clustering mechanism that maps incoming query vectors to relevant partitions while minimizing the number of necessary partition retrievals.</p>
 
 <h3>2.2 Partition Design</h3>
 
-<p>Each partition represents a carefully sized HNSW subgraph, optimized for S3 retrieval characteristics. Our analysis revealed that partition sizes between 64MB and 128MB achieve optimal performance, balancing retrieval latency against the number of required S3 requests. This sizing allows for efficient parallel retrieval while maintaining sufficient graph connectivity within each partition to preserve search quality. The partitioning algorithm ensures that high-probability search paths remain contained within partitions where possible, reducing cross-partition traversals during query execution.</p>
+<p>Each partition represents a carefully sized HNSW subgraph optimized for S3 retrieval characteristics. Our analysis revealed that partition sizes between 64MB and 128MB achieve optimal performance, balancing retrieval latency against the number of required S3 requests. This sizing allows for efficient parallel retrieval while maintaining sufficient graph connectivity within each partition to preserve search quality. The partitioning algorithm ensures that high-probability search paths remain contained within partitions where possible, reducing cross-partition traversals during query execution.</p>
 
 <h3>2.3 Query Execution Pipeline</h3>
 
@@ -146,7 +151,7 @@ style P3 fill:#bfb,stroke:#333
 <p>Figure 2: Graph partitioning strategy showing the transformation from original HNSW structure to partitioned organization with bridge edges.</p>
 
 <h3>3.1 Graph-Aware Partitioning and Connectivity</h3>
-<p>Our partitioning strategy preserves the essential navigational properties of HNSW graphs while optimizing for S3 access patterns. Unlike traditional graph partitioning that focuses solely on minimizing edge cuts, our approach balances maintaining search path integrity with partition size optimization. The algorithm identifies high-traffic paths through the graph and ensures they remain within partition boundaries where possible, reducing cross-partition traversals during search.</p>
+<p>Our partitioning strategy preserves the essential navigational properties of HNSW graphs while optimizing for S3 access patterns. Unlike traditional graph partitioning focusing solely on minimizing edge cuts, our approach balances maintaining search path integrity with partition size optimization. The algorithm identifies high-traffic paths through the graph and ensures they remain within partition boundaries where possible, reducing cross-partition traversals during search.</p>
 <p>We introduce the concept of "bridge vertices" - carefully selected nodes that maintain connections across partition boundaries while minimizing cross-partition edges. The selection of bridge vertices follows an optimization strategy that considers both local graph structure and global search patterns:</p>
 <div class="equation">
    $$B(v) = \text{deg}(v) \cdot C(v) \cdot U(v)$$
@@ -160,7 +165,7 @@ style P3 fill:#bfb,stroke:#333
    $$P_s(p) = P(a|q)\,(1 - \alpha c_t)$$
 </div>
 
-<p>where $ \alpha $ is the cost-sensitivity parameter, $ P(a|q) $ represents the probability of accessing partition $ p $ given query $ q $, and $ c_t $ is the transfer cost. This approach achieves optimal performance when prefetching 2–3 partitions per query phase.</p>
+<p>where $ \alpha $ is the cost-sensitivity parameter, $ P(a|q) $ represents the probability of accessing partition $ p $ given query $ q $, and $ c_t $ is the transfer cost. This approach performs optimally when prefetching 2–3 partitions per query phase.</p>
 <h3>3.3 Distributed Search Protocol</h3>
 
 <p>Our implementation employs a two-phase search strategy: an initial parallel exploration phase across predicted relevant partitions, followed by a focused refinement phase that retrieves additional partitions only when necessary to maintain recall guarantees. This protocol reduces query latency by up to 47% compared to sequential access while maintaining 0.9 recall. Analysis shows that optimal bridge vertex selection can reduce cross-partition traversals by up to 64% while maintaining target recall levels.</p>
@@ -294,6 +299,29 @@ style E fill:#bbf,stroke:#333
 <p>Three promising research directions emerge from our findings. Dynamic partition adaptation could enable real-time response to query patterns, with initial experiments showing potential 35% efficiency improvements. Investigation of theoretical bounds on cross-partition connectivity could establish fundamental limits for recall guarantees. Multi-modal graph partitioning presents opportunities for topology-aware partitioning strategies, particularly effective for heterogeneous graph structures.</p>
 
 <p>Beyond vector search, our findings have broader implications for distributed graph systems. The demonstrated need to jointly optimize local structure and global access patterns challenges traditional approaches that treat these as separate concerns. This insight opens new avenues for research in distributed graph algorithms, from social network analysis to molecular graph search and distributed neural networks.</p>
+
+
+<h2>References</h2>
+<div class="references" style="padding-left: 2em; text-indent: -2em;">
+    <p>
+        Johnson, J., Douze, M., & Jégou, H. (2019). Billion-scale similarity search with GPUs. IEEE Transactions on Big Data, 7(3), 535-547.
+    </p>
+    <p>
+        Subramanya, S. J., Devvrit, F., Kadekodi, H. K., Krishaswamy, R., & Simha, R. (2019). DiskANN: Fast accurate billion-point nearest neighbor search on a single node. Advances in Neural Information Processing Systems, 32.
+    </p>
+    <p>
+        Wang, J., Liu, W., Kumar, S., & Chang, S. F. (2020). Learning to hash for indexing big data—A survey. Proceedings of the IEEE, 104(1), 34-57.
+    </p>
+    <p>
+        Chen, J., Wang, Y., et al. (2021). Milvus: A purpose-built vector data management system. In Proceedings of the 2021 International Conference on Management of Data (pp. 2614-2627).
+    </p>
+    <p>
+        Guo, R., Sun, P., Lindgren, E., Geng, Q., Simcha, D., Chern, F., & Kumar, S. (2020). Accelerating large-scale inference with anisotropic vector quantization. International Conference on Machine Learning (pp. 3887-3896).
+    </p>
+    <p>
+        Malkov, Y. A., & Yashunin, D. A. (2020). Efficient and robust approximate nearest neighbor search using hierarchical navigable small world graphs. IEEE Transactions on Pattern Analysis and Machine Intelligence, 42(4), 824-836.
+    </p>
+</div>
 
 </body>
 </html>
