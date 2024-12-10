@@ -1,0 +1,36 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+//  custom CSS
+
+body {
+  line-height: 1.6;
+}
+
+p {
+  margin-bottom: 20px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 30px;
+  margin-bottom: 15px;
+}
+
+.wrapper {
+  max-width: 960px;
+}
+
+section {
+  padding-top: 30px;
+}
+
+#experience-highlights h3 {
+  margin-top: 25px;
+  margin-bottom: 10px;
+}
+
+#experience-highlights p {
+  margin-bottom: 20px;
+}

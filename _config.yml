@@ -1,0 +1,11 @@
+title: Dario Fumarola
+logo: /assets/img/logo.png
+description: The true mystery of the world is the visible, not the invisible. - Oscar Wilde
+show_downloads: true
+theme: jekyll-theme-minimal
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  math_engine: mathjax
+  syntax_highlighter: rouge
