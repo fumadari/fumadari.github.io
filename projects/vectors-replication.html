@@ -47,7 +47,7 @@
 
 <h2>1. Introduction</h2>
 
-<p>The k-nearest neighbors (k-NN) query stands as a cornerstone operation in modern computing, playing a crucial role across diverse applications including information retrieval, machine learning, retrieval-augmented generation, and recommendation systems. However, executing these queries efficiently in high-dimensional spaces remains challenging due to the curse of dimensionality, which fundamentally impacts both the effectiveness of distance metrics and the performance of vector indexing and search methods.</p>
+<p>The k-nearest neighbors (k-NN) query stands as a cornerstone operation in modern computing, playing a crucial role across diverse applications, including information retrieval, machine learning, retrieval-augmented generation, and recommendation systems. However, executing these queries efficiently in high-dimensional spaces remains challenging due to the curse of dimensionality, which fundamentally impacts both the effectiveness of distance metrics and the performance of vector indexing and search methods.</p>
 
 <p>Many vector indexing systems have evolved to address these challenges through approximate k-NN queries, primarily utilizing partitioning or clustering techniques. These methods organize datasets into manageable subsets, effectively reducing the search space and improving query efficiency. Clustering has become central to numerous approaches, forming the foundation for inverted file (IVF)–based indexing and quantization methods, enabling scaling and parallelization of vector indices. Methods such as Product Quantization (PQ), Hierarchical Navigable Small World (HNSW), and DiskANN partition datasets to allow independent indexing and searching. Recent solutions such as SPANN and VexLS have further advanced the field by distributing vectors across multiple storage units or processes, enabling parallel data access and query processing.</p>
 
@@ -60,7 +60,7 @@
 <p>In this paper, we contribute a novel selective replication method that enhances k-NN recall and search performance by focusing on boundary vectors. The replication selection can be seen as an optimization problem that maximizes a utility function balancing recall improvement and vector access cost. By prioritizing candidate vectors based on their frequency of appearance in the nearest neighbor lists of boundary vectors, we effectively identify those critical for enhancing recall. We develop an efficient approximation algorithm based on the set cover problem, incorporating diminishing returns and leveraging its submodular property to achieve strong performance guarantees. These contributions, supported by comprehensive experiments, confirm the practical applicability of our approach to large-scale datasets.</p>
 
 <div class="footnote">
-    <p>We use the terms partitioning and clustering interchangeably to refer to the overall process of splitting the data into subsets. Clustering typically refers to a special type of partitioning which uses similarity as the criteria of partitioning.</p>
+    <p>We use the terms partitioning and clustering interchangeably to refer to the overall process of splitting the data into subsets. Clustering typically refers to a special type of partitioning that uses similarity as the criteria for partitioning.</p>
 </div>
     
 <h2>2. Related Work</h2>
@@ -68,7 +68,7 @@
 
 <p>For approximate k-NN search, the primary goals shift towards maximizing recall and minimizing query time. Replication methods in recent solutions, such as SPANN [2], also follow approaches that prioritize representation quality. However, the replication is guided by distance-based data distribution characteristics rather than being directly optimized for k-NN recall and query efficiency.</p>
 
-<p>A more aligned approach for k-NN search would be to replicate the k-nearest neighbors of all possible query vectors within a cluster. While minimizing the clusters necessary to probe, this strategy may lead to excessively large overhead storage, increasing the number of vectors that need to be processed during queries.</p>
+<p>A more aligned approach for k-NN search would be replicating the k-nearest neighbors of all possible query vectors within a cluster. While minimizing the clusters necessary to probe, this strategy may lead to excessively large overhead storage, increasing the number of vectors that need to be processed during queries.</p>
 
 <p>We formulate the problem as a multi-objective optimization task to address these challenges. The dual objectives are to improve recall and minimize the number of vectors accessed during queries. By treating these objectives simultaneously, we aim to find an optimal balance that enhances k-NN search performance without incurring excessive computational costs.</p>
 
@@ -200,7 +200,7 @@
 
 <p>Our objective is to select a subset Tᵢ ⊆ Yᵢ that maximizes the coverage of B̃ᵢ while keeping |Tᵢ| small. This is equivalent to finding a set cover of B̃ᵢ using the sets {Sᵧ | y ∈ Yᵢ}.</p>
 
-<p>We apply the greedy algorithm for set cover, which iteratively selects the candidate vector that covers the largest number of uncovered sampled boundary vectors. At each iteration, we select:</p>
+<p>We apply the greedy algorithm for set cover, which iteratively selects the candidate vector that covers the largest number of uncovered sampled boundary vectors. At each iteration, we select </p>
 
 <div class="equation">
     $$y^* = \arg\max_{y \in Y_i} |S_y \cap \widetilde{B}_i'|$$
@@ -237,7 +237,7 @@ Output: Replication set Tᵢ
 
 <h2>6. Cost-Aware Analysis with Probe Analysis</h2>
 
-<p>Building upon our selective replication strategy, we introduce a cost model to balance recall improvement with query costs. Let F(k) denote the cumulative probability of finding a nearest neighbor within the top k clusters, and let G = F⁻¹ be its inverse function. Without replication, achieving a target recall Rₜₐᵣᵧₑₜ requires probing k* = G(Rₜₐᵣᵧₑₜ) clusters.</p>
+<p>Building upon our selective replication strategy, we introduce a cost model to balance recall improvement with query costs. Let F(k) denote the cumulative probability of finding the nearest neighbor within the top k clusters, and let G = F⁻¹ be its inverse function. Without replication, achieving a target recall Rₜₐᵣᵧₑₜ requires probing k* = G(Rₜₐᵣᵧₑₜ) clusters.</p>
 
 <p>Introducing a replication factor r = |T|/n, where |T| is the size of the replication set and n is the total number of vectors, adjusts the expected recall for a query q to:</p>
 
@@ -245,13 +245,13 @@ Output: Replication set Tᵢ
     $$\mathbb{E}[Z_{q,k}] = r + (1-r)F(k)$$
 </div>
 
-<p>This accounts for the probability that the nearest neighbor is found within the replicated set T with probability r, or within the top k clusters with adjusted probability (1-r)F(k). To maintain the target recall Rₜₐᵣᵧₑₜ, we adjust the number of required probes to:</p>
+<p>This accounts for the probability that the nearest neighbor is found within the replicated set T with probability r or within the top k clusters with adjusted probability (1-r)F(k). To maintain the target recall Rₜₐᵣᵧₑₜ, we adjust the number of required probes to:</p>
 
 <div class="equation">
     $$\widetilde{k} = G\left(\frac{R_{\text{target}} - r}{1-r}\right)$$
 </div>
 
-<p>Let B denote the number of clusters and p(k) represent the probability of accessing the k-th cluster. The total number of vectors accessed during query processing is given by:</p>
+<p>Let B denote the number of clusters, and p(k) represent the probability of accessing the k-th cluster. The total number of vectors accessed during query processing is given by:</p>
 
 <div class="equation">
     $$V(T) = \widetilde{k} \cdot \frac{n}{B} \left(1 + (1-p(1))r\right)$$
@@ -327,15 +327,15 @@ Output: Replication set T
 
 <p>This cost-aware selection algorithm extends our earlier utility maximization by explicitly incorporating storage and query costs, allowing for a more nuanced trade-off between recall improvement and resource consumption.</p>
 
-<h2>8. Performance Evaluation</h2>
+<h2>7. Performance Evaluation</h2>
 
-<h3>8.1 Experimental Setup</h3>
+<h3>7.1 Experimental Setup</h3>
 
 <p>We conduct experiments on three large-scale datasets representing different real-world vector search scenarios: LAION10M containing 10 million 768-dimensional image embeddings, COHERE5M with 5 million 768-dimensional Wikipedia articles embeddings, and GIST1M comprising 1 million 960-dimensional GIST descriptors. These datasets exhibit diverse characteristics in terms of dimensionality, size, and data distribution.</p>
 
 <p>For clustering granularity, we use k-means with different numbers of clusters tailored to each dataset's size: 1000 clusters for LAION10M, 500 for COHERE5M, and 100 for GIST1M. All experiments were conducted on an AWS p3.16xlarge EC2 instance with 488GB RAM and 8 NVIDIA V100 GPUs, though our method primarily utilizes CPU resources for both indexing and search, and can run on the majority of common hardware.</p>
 
-<h3>8.2 Comparison with Alternative Methods</h3>
+<h3>7.2 Comparison with Alternative Methods</h3>
 
 <div class="results">
     <p>Figure 1 demonstrates the effectiveness of our selective vector replication method compared to the baselines across LAION and COHERE embeddings, with all methods normalized to use 100% storage overhead. For LAION10M, at this fixed storage budget, our method achieves 0.96 recall while accessing 97K vectors, compared to 193K vectors needed by the baseline approaches - a 49.7% reduction in vectors accessed.</p>
@@ -366,7 +366,7 @@ Output: Replication set T
 
 <p>The performance gains are consistent across datasets of different characteristics. On COHERE5M, with text embeddings of equal dimensionality, our method reduces vectors accessed by 62.2% (from 196K to 74K vectors) to achieve 0.95 recall. The performance improvement is particularly pronounced in the high-recall regions (>0.90), where identifying the true nearest neighbors becomes increasingly challenging.</p>
 
-<h3>8.3 Coverage Analysis</h3>
+<h3>7.3 Coverage Analysis</h3>
 
 <p>Figures 2 and 3 illustrate how boundary vector coverage impacts the number of vectors accessed to achieve target recall levels. Coverage, ranging from 0.1 to 0.7, represents the fraction of boundary vectors whose k' nearest neighbors are replicated to their respective clusters.</p>
 
@@ -382,7 +382,7 @@ Output: Replication set T
     <figcaption>Figure 3: Performance for different coverages (LAION10M)</figcaption>
 </figure>
 
-<h3>8.4 Cost-Aware Analysis and Operating Points</h3>
+<h3>7.4 Cost-Aware Analysis and Operating Points</h3>
 
 <p>Figure 4 illustrates the marginal improvement behavior of our replication strategy as coverage increases on the GIST dataset, revealing distinct operating regions. In the initial region (0-10% replication), we observe major improvements where both recall improves sharply and the number of vectors accessed decreases.</p>
 
@@ -392,10 +392,10 @@ Output: Replication set T
 </figure>
 
 <div class="results">
-    <p>Beyond 10% replication, we enter a trade-off region where marginal recall improvements diminish. The vectors reduction curve shows that the efficiency gains from replication decline steadily after the 30% mark. This pattern aligns with our cost model analysis, which predicted such diminishing returns.</p>
+    <p>Beyond 10% replication, we enter a trade-off region where marginal recall improvements diminish. The vector reduction curve shows that the efficiency gains from replication decline steadily after the 30% mark. This pattern aligns with our cost model analysis, which predicted such diminishing returns.</p>
 </div>
 
-<h3>8.5 Trade-off Optimization</h3>
+<h3>7.5 Trade-off Optimization</h3>
 
 <p>Figure 5 demonstrates the Pareto frontier achieved by our selective replication method across different operating points. Each point on the curve represents a different configuration of replication factor and number of probes, with the frontier line showing the optimal trade-off between recall and vectors accessed.</p>
 
@@ -404,13 +404,13 @@ Output: Replication set T
     <figcaption>Figure 5: Pareto frontier of recall and vectors accessed</figcaption>
 </figure>
 
-<p>The results validate our theoretical analysis from Section 7.4, which predicted the existence of these Pareto-optimal configurations. At C=0.3, we achieve 0.95 recall while accessing only 35% of the vectors required by the baseline approach with no replication. As coverage increases to C=0.5, recall improves to 0.97 but with diminishing efficiency gains, aligning with our utility function model.</p>
+<p>The results validate our theoretical analysis, which predicted the existence of these Pareto-optimal configurations. At C=0.3, we achieve 0.95 recall while accessing only 35% of the vectors required by the baseline approach with no replication. As coverage increases to C=0.5, recall improves to 0.97 but with diminishing efficiency gains, aligning with our utility function model.</p>
 
 <p>The practical implications of this analysis suggest that practitioners should focus on the steep initial portion of the Pareto curve (0.2 ≤ C ≤ 0.4), where recall improvements are most cost-effective. This region provides the best balance between storage overhead, computational efficiency, and recall performance, achieving 95-97% of the maximum possible recall while keeping vector access costs to a practical minimum.</p>
 
 
 
-<h2>9. Conclusion</h2>
+<h2>8. Conclusion</h2>
 
 <p>We have introduced a selective vector replication method that significantly enhances the recall and query performance of approximate nearest neighbor (k-NN) search in high-dimensional spaces. By focusing on boundary vectors—those whose nearest neighbors reside in different clusters—we address the fundamental challenge where traditional clustering disperses nearest neighbors across multiple clusters, degrading recall and increasing search costs. Our method formulates vector replication as an optimization problem that maximizes a utility function balancing recall improvement against the cost of vector access, leading to a combinatorial optimization solution based on the set cover problem.</p>
 
@@ -420,7 +420,7 @@ Output: Replication set T
     <h3>Future Directions</h3>
 
     <h4>Cost-Aware Cluster Coverage</h4>
-    <p>One limitation of our current approach is the assumption of uniform costs when covering the query set, whereas in practice, the cost of covering subsets of queries within the same cluster differs from covering those across different clusters. This suggests an extension to our method by considering a cost model where coverage depends on cluster membership. By prioritizing neighbor vectors that cover the most queries within the same cluster—measured by the cluster-wise reverse nearest neighbor (RNN) size—we can further minimize the replication factor while maintaining high recall.</p>
+    <p>One limitation of our current approach is the assumption of uniform costs when covering the query set, whereas, in practice, the cost of covering subsets of queries within the same cluster differs from covering those across different clusters. This suggests an extension to our method by considering a cost model where coverage depends on cluster membership. By prioritizing neighbor vectors that cover the most queries within the same cluster—measured by the cluster-wise reverse nearest neighbor (RNN) size—we can further minimize the replication factor while maintaining high recall.</p>
 
     <h4>Incorporating Diversity</h4>
     <p>Incorporating diversity into the replication process is a possible valuable extension. By selecting a diverse sample of boundary vectors to represent cluster boundaries and choosing a diverse set of neighbors for each boundary vector, we can reduce redundancy and improve query efficiency. Instead of replicating only the top-k neighbors, we can consider a larger set and select a diverse subset to replicate. This strategy brings in vectors from clusters spread across the data space, reducing the likelihood of redundant vector accesses during queries.</p>
