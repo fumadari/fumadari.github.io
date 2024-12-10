@@ -80,6 +80,12 @@
     <p>
         Beyond improving prediction accuracy, GeoGAT provides interpretable insights through its attention mechanism, which naturally highlights chemically relevant patterns. By analyzing attention weights, chemists and computational biologists can identify key substructures responsible for specific properties, facilitating rational drug design decisions. Our extensive validation shows that these learned patterns align remarkably well with established chemical principles, suggesting that GeoGAT learns meaningful chemical representations rather than standard statistical correlations.
     </p>
+
+    <h3>1.1 Related Work</h3>
+    <p>
+    Recent advances in molecular property prediction have seen significant contributions from various graph-based approaches. SchNet introduced continuous-filter convolutional layers for modeling quantum interactions, while DimeNet++ leveraged directional message passing to capture spatial information in molecular graphs. Graph attention networks (GATs) have shown particular promise, with models like AttentiveFP demonstrating the value of learnable attention mechanisms for molecular fingerprinting. More recently, 3D-Transformer architectures have attempted to directly operate on molecular conformers, though they often struggle with rotational invariance and computational scalability. Our work builds upon these foundations while addressing their limitations through geometric feature integration and the novel supernode mechanism.
+    </p>
+    
     <p>
         The remainder of this report is organized as follows. Section 2 details our data preparation pipeline and feature engineering approach. Section 3 presents the GeoGAT architecture, including our novel geometric attention mechanism and supernode integration. Section 4 demonstrates GeoGAT's effectiveness through comprehensive experiments and analyses, including detailed case studies on drug-like molecules. We conclude by discussing limitations and future directions for geometric deep learning in molecular property prediction.
     </p>
@@ -640,4 +646,26 @@
         GeoGAT represents a significant step toward more realistic and interpretable molecular modeling. By combining the expressivity of graph neural networks with principled geometric deep learning approaches, we have created a framework that not only achieves superior predictive performance but also provides chemically meaningful insights. As the field of geometric deep learning continues to evolve, we believe this integration of spatial and topological information will become increasingly crucial for advancing our understanding of molecular systems and accelerating the discovery of new materials and therapeutics.
     </p>
 
+
+
+<h2>References</h2>
+<div class="references" style="padding-left: 2em; text-indent: -2em;">
+    <p>
+        Gilmer, J., Schoenholz, S. S., Riley, P. F., Vinyals, O., & Dahl, G. E. (2017). Neural message passing for quantum chemistry. In International Conference on Machine Learning (pp. 1263-1272).
+    </p>
+    <p>
+        Klicpera, J., Groß, J., & Günnemann, S. (2020). Directional message passing for molecular graphs. International Conference on Learning Representations.
+    </p>
+    <p>
+        Schütt, K. T., Sauceda, H. E., Kindermans, P. J., Tkatchenko, A., & Müller, K. R. (2018). SchNet–A deep learning architecture for molecules and materials. The Journal of Chemical Physics, 148(24), 241722.
+    </p>
+    <p>
+        Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., & Polosukhin, I. (2017). Attention is all you need. Advances in Neural Information Processing Systems, 30.
+    </p>
+    <p>
+        Xiong, Z., Wang, D., Liu, X., Zhong, F., Wan, X., Li, X., ... & Ding, K. (2019). Pushing the boundaries of molecular representation for drug discovery with the graph attention mechanism. Journal of Medicinal Chemistry, 63(16), 8749-8760.
+    </p>
+</div>
+</body>
+</html>
 
