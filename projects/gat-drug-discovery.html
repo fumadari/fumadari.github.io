@@ -180,83 +180,13 @@
         $$\alpha_{ij}^{(k)} = \text{softmax}_j\left(\frac{(\mathbf{W}_Q^{(k)}\mathbf{h}_i)^\top(\mathbf{W}_K^{(k)}\mathbf{h}_j)}{\sqrt{d_k}} + \gamma_{ij}(\mathbf{g}_i, \mathbf{g}_j)\right)$$
     </div>
 
-<p>
-    The geometric bias term incorporates three key spatial components: radial distances (‖rij‖₂), angular features (∠ijk), and dihedral angles (φijkl). Each component is processed through specialized neural networks before combination:
-</p>
+    <p>
+        The geometric bias term \(\gamma_{ij}\) encodes crucial spatial relationships between atoms, incorporating distance and angular information:
+    </p>
 
-<div class="equation">
-    $$\gamma_{ij}(\mathbf{g}_i, \mathbf{g}_j) = \text{MLP}_{\text{rad}}(f_{\text{rad}}(\|\mathbf{r}_{ij}\|_2)) + \text{MLP}_{\text{ang}}(f_{\text{ang}}(\angle_{ijk})) + \text{MLP}_{\text{tor}}(f_{\text{tor}}(\phi_{ijkl}))$$
-</div>
-
-<p>
-    where the feature functions f_rad, f_ang, and f_tor apply Gaussian basis expansions to capture relevant geometric scales:
-</p>
-
-<div class="equation">
-    $$f_{\text{rad}}(r) = [\exp(-\frac{(r-\mu_k)^2}{2\sigma_k^2})]_{k=1}^K$$
-</div>
-
-<div class="equation">
-    $$f_{\text{ang}}(\theta) = [\exp(-\frac{(\cos(\theta)-\cos(\mu_k))^2}{2\sigma_k^2})]_{k=1}^K$$
-</div>
-
-<p>
-    The radial basis functions use K=16 centers μk logarithmically spaced between 0.5Å and 5Å with adaptive width parameters σk learned during training. Angular basis functions employ K=8 centers uniformly spaced in the cosine domain [-1,1]. We introduce a novel adaptive scaling mechanism for the angular components that accounts for local atomic environments:
-</p>
-
-<div class="equation">
-    $$\sigma_k = \sigma_{\text{base}} \cdot \text{softplus}(\text{MLP}_{\text{scale}}([\mathbf{h}_i \| \mathbf{h}_j]))$$
-</div>
-
-<p>
-    A key innovation in our geometric bias term is incorporating lo<p>
-    The geometric bias term incorporates three key spatial components: radial distances (‖rij‖₂), angular features (∠ijk), and dihedral angles (φijkl). Each component is processed through specialized neural networks before combination:
-</p>
-
-<div class="equation">
-    $$\gamma_{ij}(\mathbf{g}_i, \mathbf{g}_j) = \text{MLP}_{\text{rad}}(f_{\text{rad}}(\|\mathbf{r}_{ij}\|_2)) + \text{MLP}_{\text{ang}}(f_{\text{ang}}(\angle_{ijk})) + \text{MLP}_{\text{tor}}(f_{\text{tor}}(\phi_{ijkl}))$$
-</div>
-
-<p>
-    where the feature functions f_rad, f_ang, and f_tor apply Gaussian basis expansions to capture relevant geometric scales:
-</p>
-
-<div class="equation">
-    $$f_{\text{rad}}(r) = [\exp(-\frac{(r-\mu_k)^2}{2\sigma_k^2})]_{k=1}^K$$
-</div>
-
-<div class="equation">
-    $$f_{\text{ang}}(\theta) = [\exp(-\frac{(\cos(\theta)-\cos(\mu_k))^2}{2\sigma_k^2})]_{k=1}^K$$
-</div>
-
-<p>
-    The radial basis functions use K=16 centers μk logarithmically spaced between 0.5Å and 5Å with adaptive width parameters σk learned during training. Angular basis functions employ K=8 centers uniformly spaced in the cosine domain [-1,1]. We introduce a novel adaptive scaling mechanism for the angular components that accounts for local atomic environments:
-</p>
-
-<div class="equation">
-    $$\sigma_k = \sigma_{\text{base}} \cdot \text{softplus}(\text{MLP}_{\text{scale}}([\mathbf{h}_i \| \mathbf{h}_j]))$$
-</div>
-
-<p>
-    A key innovation in our geometric bias term is incorporating the local chemical environment through a weighted aggregation of nearby atomic contributions. For each atom pair (i,j), we compute an environment tensor Eij that captures the influence of surrounding atoms:
-</p>
-
-<div class="equation">
-    $$\mathbf{E}_{ij} = \sum_{k \in \mathcal{N}(i)} w_{ijk} \cdot \text{MLP}_{\text{env}}([\mathbf{h}_k \| \|\mathbf{r}_{ik}\|_2 \| \|\mathbf{r}_{jk}\|_2])$$
-</div>
-
-<p>
-    where w_ijk are learned attention weights that determine the relevance of each neighboring atom k to the interaction between atoms i and j. This environment-aware geometric bias enables the model to capture subtle effects such as π-stacking geometries, hydrogen bonding networks, and stereoelectronic effects that influence molecular properties.
-</p>cal chemical environment through a weighted aggregation of nearby atomic contributions. For each atom pair (i,j), we compute an environment tensor Eij that captures the influence of surrounding atoms:
-</p>
-
-<div class="equation">
-    $$\mathbf{E}_{ij} = \sum_{k \in \mathcal{N}(i)} w_{ijk} \cdot \text{MLP}_{\text{env}}([\mathbf{h}_k \| \|\mathbf{r}_{ik}\|_2 \| \|\mathbf{r}_{jk}\|_2])$$
-</div>
-
-<p>
-    where w_ijk are learned attention weights that determine the relevance of each neighboring atom k to the interaction between atoms i and j. This environment-aware geometric bias enables the model to capture subtle effects such as π-stacking geometries, hydrogen bonding networks, and stereoelectronic effects that influence molecular properties.
-</p>
+    <div class="equation">
+        $$\gamma_{ij}(\mathbf{g}_i, \mathbf{g}_j) = \text{MLP}_{\text{geo}}([\|\mathbf{r}_{ij}\|_2 \| \angle_{ijk} \| \phi_{ijkl}])$$
+    </div>
 
     <p>
         A key feature of our architecture is the global context supernode, which maintains a comprehensive representation of the entire molecule. This supernode participates in bidirectional attention with all atoms, enabling the model to capture long-range interactions and global electronic effects. The supernode's representation \(\mathbf{h}_s\) is updated in parallel with the atomic representations through specialized attention layers:
@@ -683,7 +613,7 @@
     </ul>
     
     <p>
-        Notably, our AWS implementation scales efficiently with increasing workload. The system maintains sub-minute latency for single protein-ligand pairs while supporting batch processing of up to 1000 combinations per hour through automatic scaling of ECS tasks.
+        Notably, our AWS implementation scales efficiently with increasing workload. The system maintains sub-minute latency for single protein-ligand pairs while supporting batch processing of up to 1000 combinations per hour through automatically scaling ECS tasks.
     </p>
 
 
@@ -699,7 +629,7 @@
     </p>
     
     <p>
-        A key theoretical contribution of our work lies in the development of geometrically-aware attention mechanisms that respect molecular symmetries. By designing our feature representations and attention computations to be invariant under rotations and translations, we ensure that our model captures intrinsic molecular properties rather than arbitrary spatial orientations. The global context supernode further enhances this geometric understanding by aggregating and propagating spatial information across the entire molecule, enabling the model to capture long-range geometric effects that traditional local message-passing approaches might miss.
+        A key theoretical contribution of our work lies in developing geometrically-aware attention mechanisms that respect molecular symmetries. By designing our feature representations and attention computations to be invariant under rotations and translations, we ensure that our model captures intrinsic molecular properties rather than arbitrary spatial orientations. The global context supernode further enhances this geometric understanding by aggregating and propagating spatial information across the entire molecule, enabling the model to capture long-range geometric effects that traditional local message-passing approaches might miss.
     </p>
     
     <p>
@@ -709,13 +639,5 @@
     <p>
         GeoGAT represents a significant step toward more realistic and interpretable molecular modeling. By combining the expressivity of graph neural networks with principled geometric deep learning approaches, we have created a framework that not only achieves superior predictive performance but also provides chemically meaningful insights. As the field of geometric deep learning continues to evolve, we believe this integration of spatial and topological information will become increasingly crucial for advancing our understanding of molecular systems and accelerating the discovery of new materials and therapeutics.
     </p>
-    
-    
-
-
-
-    
-</body>
-</html>
 
 
