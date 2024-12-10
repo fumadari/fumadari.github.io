@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+t<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8"/>
@@ -87,12 +87,12 @@
     </p>
     
     <p>
-        The remainder of this report is organized as follows. Section 2 details our data preparation pipeline and feature engineering approach. Section 3 presents the GeoGAT architecture, including our novel geometric attention mechanism and supernode integration. Section 4 demonstrates GeoGAT's effectiveness through comprehensive experiments and analyses, including detailed case studies on drug-like molecules. We conclude by discussing limitations and future directions for geometric deep learning in molecular property prediction.
+        The remainder of this report is organized as follows. Section 2 details our data preparation pipeline and feature engineering approach. Section 3 presents the GeoGAT architecture, including our novel geometric attention mechanism and supernode integration. Section 4 demonstrates GeoGAT's effectiveness through comprehensive experiments and analyses, including detailed case studies on drug-like molecules. In section 5, we conclude by discussing limitations, extensions on AWS with protein folding models, and future directions for geometric deep learning in molecular property prediction.
     </p>
 
     <h2>2. Data and Preprocessing</h2>
     <p>
-        Our evaluation framework builds upon three widely-used molecular datasets that capture different aspects of chemical behavior. The QM9 dataset provides quantum mechanical properties for approximately 134,000 small organic molecules, computed using density functional theory. This dataset serves as our primary benchmark for electronic and energetic properties. For drug discovery applications, we utilize a curated subset of ChEMBL containing roughly 100,000 drug-like molecules with experimental binding data against diverse protein targets. Additionally, we incorporate the PDBbind dataset, comprising 20,000 protein-ligand complexes with experimentally determined binding affinities, to validate our model's ability to capture complex structural interactions.
+        Our evaluation framework builds upon three widely used molecular datasets that capture different aspects of chemical behavior. The QM9 dataset provides quantum mechanical properties for approximately 134,000 small organic molecules, computed using density functional theory. This dataset serves as our primary benchmark for electronic and energetic properties. For drug discovery applications, we utilize a curated subset of ChEMBL containing roughly 100,000 drug-like molecules with experimental binding data against diverse protein targets. Additionally, we incorporate the PDBbind dataset, comprising 20,000 protein-ligand complexes with experimentally determined binding affinities, to validate our model's ability to capture complex structural interactions.
     </p>
     <p>
         For each molecule, we generate a comprehensive feature representation that combines atomic, geometric, and quantum mechanical properties. The atomic features capture basic chemical properties through a 32-dimensional vector encoding elements such as atomic number, hybridization state, and formal charge. Geometric features are computed from 3D conformers generated using the MMFF94 force field, resulting in a 16-dimensional vector that includes local coordinate frames, bond angles, and molecular surface descriptors. We complement these with quantum chemical features (8 dimensions) derived from semi-empirical calculations, including partial charges and local electronic density descriptors.
@@ -101,7 +101,7 @@
         Data quality and consistency are ensured through a rigorous preprocessing pipeline. We standardize molecular representations using RDKit's canonical form generation and implement careful handling of tautomers and charged states. Three-dimensional conformers are generated using a distance geometry approach followed by force field optimization, with ensemble averaging over low-energy conformers to reduce conformational bias. For the binding affinity data, we apply protein-ligand complex preparation protocols that include proper treatment of protonation states and removal of crystallographic artifacts.
     </p>
     <p>
-        To ensure robust evaluation of model generalization, we employ a scaffold-based splitting strategy that separates structurally similar molecules into the same partition. The final split allocates 80% of the data for training, with 10% each for validation and testing. This approach provides a more challenging and realistic assessment than random splitting, as it requires the model to generalize to novel molecular scaffolds rather than making predictions on close structural analogues of training compounds. During development, we utilize 5-fold cross-validation on the training set for hyperparameter optimization, with final performance reported on the held-out test set.
+        To ensure robust evaluation of model generalization, we employ a scaffold-based splitting strategy that separates structurally similar molecules into the same partition. The final split allocates 80% of the data for training, with 10% each for validation and testing. This approach provides a more challenging and realistic assessment than random splitting, as it requires the model to generalize to novel molecular scaffolds rather than making predictions on close structural analogs of training compounds. During development, we utilize 5-fold cross-validation on the training set for hyperparameter optimization, with final performance reported on the held-out test set.
     </p>
 
     <h2>3. Methodology</h2>
