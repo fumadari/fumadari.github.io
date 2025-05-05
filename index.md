@@ -50,6 +50,9 @@ This research redesigns vector similarity search for cloud environments, leverag
 #### [GeoGAT: Geometry-Enriched Graph Attention for Molecular Insights](./projects/gat-drug-discovery.html)
 GeoGAT integrates graph attention networks with geometric and quantum features to enhance molecular property prediction. By incorporating 3D structural descriptors, electronic characteristics, and a global context “supernode,” the model learns to focus on chemically meaningful regions. This approach improves accuracy on tasks like binding affinity and solubility prediction while offering interpretable attention patterns that highlight key functional groups and interactions. The result is a more informed, geometry-aware framework that aligns closely with established chemical principles and provides actionable insights for drug discovery and materials science.
 
+
+#### [Touch-a-neuron](./projects/Touch‑a‑Neuron.html)
+
 ### Contact
 
 I'm always eager to discuss research opportunities or collaborate on interesting projects. Feel free to reach out!
