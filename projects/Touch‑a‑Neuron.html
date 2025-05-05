@@ -175,6 +175,83 @@
     Touch-a-Neuron draws inspiration from this confluence. While standard MoE achieves *activation* sparsity (only <span class="variable">k</span> experts compute), the proposed Hebbian routing introduces a learning mechanism grounded in local activity correlations, akin to biological synaptic modification. This contrasts with global gradient-based routing optimization, potentially offering a different inductive bias—one favouring specialization based on direct, repeated input-expert co-activation rather than solely on downstream task performance contribution. It attempts to embed a form of associative learning directly into the routing fabric of the network. Our approach differs from purely biologically motivated models by integrating this local rule within a framework where the experts themselves are still trained via efficient backpropagation, aiming for a hybrid model that leverages strengths from both paradigms.
 </p>
 
-    
+
+
+
+<h2>3. The Touch-a-Neuron Architecture and Hebbian Routing</h2>
+<p>
+    The Touch-a-Neuron framework modifies the standard Sparse MoE architecture by introducing a Hebbian learning component directly into the expert routing mechanism. Instead of relying solely on gradient descent applied to a parameterized gating network, the affinity between an input token and potential experts is dynamically adjusted based on local co-activation history.
+</p>
+
+<h3>3.1 Architectural Overview</h3>
+<p>
+    A Touch-a-Neuron MoE layer operates on an input token representation <span class="variable">\(\mathbf{x} \in \mathbb{R}^d\)</span> (e.g., the output of a preceding transformer layer). It comprises the following core components:
+    <ol>
+        <li><strong>Input Representation:</strong> The token embedding <span class="variable">\(\mathbf{x}\)</span> serves as the input signal for the routing decision.</li>
+        <li><strong>Hebbian Router:</strong> This module determines which experts are selected for the input <span class="variable">\(\mathbf{x}\)</span>. Unlike a standard gating network with weights trained via backpropagation, the Hebbian router maintains a set of *affinity vectors* or *synaptic weight vectors*, one for each expert, <span class="variable">\(\{\mathbf{w}_i \in \mathbb{R}^d\}_{i=1}^N\)</span>, where <span class="variable">\(N\)</span> is the total number of experts. These weights <span class="variable">\(\mathbf{w}_i\)</span> capture the learned association between input patterns and expert <span class="variable">\(E_i\)</span>. They are updated using a local Hebbian rule.</li>
+        <li><strong>Expert Network Pool:</strong> A collection of <span class="variable">\(N\)</span> expert subnetworks <span class="variable">\(\{E_i(\cdot)\}_{i=1}^N\)</span>, each typically having the same architecture (e.g., a feed-forward network). These experts process the input token <span class="variable">\(\mathbf{x}\)</span> if selected by the router. Their internal parameters are trained using standard backpropagation.</li>
+        <li><strong>Combiner Mechanism:</strong> Aggregates the outputs from the selected experts to produce the final output <span class="variable">\(\mathbf{y}\)</span> for the layer. This usually involves a weighted sum, where the weights might be derived from the router's affinity scores or kept simple (e.g., uniform averaging).</li>
+    </ol>
+    The key innovation lies within the Hebbian Router and its learning dynamics.
+</p>
+
+<figure>
+    <img src="placeholder_touch_a_neuron_architecture.png" alt="Diagram of the Touch-a-Neuron Architecture" style="width: 80%; border: 1px solid #ccc;">
+    <figcaption>Figure 1: Conceptual Diagram of the Touch-a-Neuron MoE layer. Input <span class="variable">\(\mathbf{x}\)</span> interacts with the Hebbian Router. Router affinities <span class="variable">\(\mathbf{w}_i\)</span> are updated based on co-activation (Hebbian Learning). Affinities determine selection (e.g., top-k). Selected experts <span class="variable">\(E_i, E_j\)</span> process <span class="variable">\(\mathbf{x}\)</span> (trained via Backprop). Outputs are combined.</figcaption>
+</figure>
+
+
+<h3>3.2 Hebbian Routing Mechanism</h3>
+<p>
+    The core of Touch-a-Neuron is the computation and update of the affinity weights <span class="variable">\(\mathbf{w}_i\)</span>.
+</p>
+<p>
+    <strong>Affinity Score Calculation:</strong> For a given input <span class="variable">\(\mathbf{x}\)</span>, the affinity score <span class="variable">\(s_i\)</span> indicating the suitability of expert <span class="variable">\(E_i\)</span> is computed based on the current state of its associated weight vector <span class="variable">\(\mathbf{w}_i\)</span>. A simple and common choice is the dot product:
+    <div class="equation">
+        <span class="variable">\(s_i = \mathbf{w}_i^T \mathbf{x}\)</span>
+        <span class="equation-label">(1)</span>
+    </div>
+    This score <span class="variable">\(s_i\)</span> reflects the alignment between the input representation and the pattern encoded in the expert's affinity vector. Other similarity measures (e.g., cosine similarity) could also be employed.
+</p>
+<p>
+    <strong>Expert Selection:</strong> Similar to standard sparse MoE, a top-<span class="variable">k</span> selection strategy is used based on the computed affinity scores <span class="variable">\(\{s_i\}_{i=1}^N\)</span>. Let <span class="variable">\(\mathcal{I}(\mathbf{x}) \subset \{1, ..., N\}\)</span> be the set of indices of the <span class="variable">k</span> experts with the highest affinity scores for input <span class="variable">\(\mathbf{x}\)</span>. These are the experts that will be activated.
+</p>
+<p>
+    <strong>Hebbian Update Rule:</strong> The crucial difference lies in how the affinity weights <span class="variable">\(\mathbf{w}_i\)</span> are updated. This update occurs *after* an expert <span class="variable">\(E_i\)</span> has been selected (or potentially considered) for processing input <span class="variable">\(\mathbf{x}\)</span>. We adapt a stabilized Hebbian learning rule. Let <span class="variable">\(y_i\)</span> represent the "post-synaptic" activity, which in this context signifies the selection or activation level of expert <span class="variable">\(E_i\)</span> for input <span class="variable">\(\mathbf{x}\)</span>. A simple binary choice is <span class="variable">\(y_i = 1\)</span> if <span class="variable">\(i \in \mathcal{I}(\mathbf{x})\)</span> (expert <span class="variable">\(i\)</span> is selected) and <span class="variable">\(y_i = 0\)</span> otherwise.
+</p>
+<p>
+    A candidate stabilized Hebbian rule, inspired by Oja's rule (Oja, 1982) which introduces a normalization term to prevent unbounded weight growth, is:
+    <div class="equation">
+        <span class="variable">\(\Delta \mathbf{w}_i = \eta \cdot y_i \cdot (\mathbf{x} - s_i \cdot \mathbf{w}_i)\)</span>
+        <span class="equation-label">(2)</span>
+    </div>
+    where <span class="variable">\(\eta\)</span> is the Hebbian learning rate. This rule implies:
+    <ul>
+        <li><strong>Potentiation:</strong> If expert <span class="variable">\(E_i\)</span> is selected (<span class="variable">\(y_i=1\)</span>), its weight vector <span class="variable">\(\mathbf{w}_i\)</span> is moved towards the input vector <span class="variable">\(\mathbf{x}\)</span> (<span class="variable">\(\eta y_i \mathbf{x}\)</span> term). This strengthens the association for similar future inputs.</li>
+        <li><strong>Depression/Normalization:</strong> The term <span class="variable">\(-\eta y_i s_i \mathbf{w}_i\)</span> acts as a forgetting or normalization factor. It scales with the current affinity score <span class="variable">\(s_i = \mathbf{w}_i^T \mathbf{x}\)</span> and the weight vector itself, preventing the weights from growing indefinitely and encouraging <span class="variable">\(\mathbf{w}_i\)</span> to represent principal directions of the inputs it gets associated with.</li>
+        <li><strong>Locality:</strong> The update for <span class="variable">\(\mathbf{w}_i\)</span> only depends on the input <span class="variable">\(\mathbf{x}\)</span>, the selection decision <span class="variable">\(y_i\)</span>, and the current state of <span class="variable">\(\mathbf{w}_i\)</span>. It does not depend on the global task loss or the activities of other experts beyond their selection status.</li>
+        <li><strong>No Update if Not Selected:</strong> If <span class="variable">\(y_i = 0\)</span>, then <span class="variable">\(\Delta \mathbf{w}_i = \mathbf{0}\)</span>. The affinity vector for an expert is not updated if that expert was not chosen for the current input.</li>
+    </ul>
+    Other Hebbian variants, potentially including decay terms or different forms of normalization, could also be explored. The choice of rule impacts the stability and the nature of the learned associations.
+</p>
+
+<h3>3.3 Combining Expert Outputs</h3>
+<p>
+    Once the selected experts <span class="variable">\(\{E_i | i \in \mathcal{I}(\mathbf{x})\}\)</span> have processed the input <span class="variable">\(\mathbf{x}\)</span> to produce outputs <span class="variable">\(\{\mathbf{z}_i = E_i(\mathbf{x})\}_{i \in \mathcal{I}(\mathbf{x})}\)</span>, their outputs must be combined. A common MoE approach is a weighted sum:
+    <div class="equation">
+        <span class="variable">\(\mathbf{y} = \sum_{i \in \mathcal{I}(\mathbf{x})} g_i(\mathbf{x}) \cdot E_i(\mathbf{x})\)</span>
+        <span class="equation-label">(3)</span>
+    </div>
+    The gating weights <span class="variable">\(g_i(\mathbf{x})\)</span> need to be determined. In standard MoE, these are often derived from the softmax output of the gating network. In Touch-a-Neuron, several options exist:
+    <ol>
+        <li><strong>Hebbian Scores as Weights:</strong> Use the normalized affinity scores <span class="variable">\(s_i\)</span> directly. For example, apply softmax only over the selected experts' scores: <span class="variable">\(g_i(\mathbf{x}) = \text{softmax}(\{s_j\}_{j \in \mathcal{I}(\mathbf{x})})\)</span> for <span class="variable">\(i \in \mathcal{I}(\mathbf{x})\)</span>. This allows routing strength to influence the contribution.</li>
+        <li><strong>Learnable Gating Weights (Hybrid):</strong> Introduce a small, separate gating network trained via backpropagation whose output (after softmax over selected experts) provides the <span class="variable">\(g_i(\mathbf{x})\)</span> values. The Hebbian mechanism handles selection, while a standard gate handles weighting.</li>
+        <li><strong>Uniform Weights:</strong> Simply average the outputs: <span class="variable">\(g_i(\mathbf{x}) = 1/k\)</span> for all <span class="variable">\(i \in \mathcal{I}(\mathbf{x})\)</span>. This is the simplest approach.</li>
+    </ol>
+    The choice impacts how much the Hebbian-learned affinities influence the final output magnitude, versus just the selection.
+</p>
+<p>
+    Critically, the parameters *within* the experts <span class="variable">\(E_i\)</span> are trained using backpropagation based on the overall task loss <span class="variable">\(\mathcal{L}\)</span>. The gradients <span class="variable">\(\partial \mathcal{L} / \partial E_i\)</span> flow back through the combiner and into the selected experts. However, typically, *no gradient flows back into the Hebbian affinity weights* <span class="variable">\(\mathbf{w}_i\)</span> from the main task loss. Their updates are governed solely by the local rule (Eq. 2). The selection process itself (top-<span class="variable">k</span> based on <span class="variable">\(s_i\)</span>) is non-differentiable and treated as fixed during the backward pass for expert training, similar to standard MoE implementations.
+</p>
 </body>
 </html>
