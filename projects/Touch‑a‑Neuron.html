@@ -1,124 +1,336 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Touch‑a‑Neuron: Hebbian‑Routed Sparse Mixture‑of‑Experts Models — A Scientific Report</title>
-  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-  <style>
-    :root {
-      --fg: #111;
-      --bg: #ffffff;
-      --accent: #0057e7;
-      --code-bg: #f5f7fa;
-    }
-
-    html { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-    body { max-width: 880px; margin: 3rem auto; padding: 0 1.2rem; color: var(--fg); background: var(--bg); line-height: 1.65; }
-    h1, h2, h3, h4 { color: var(--accent); margin-top: 2.2rem; margin-bottom: 0.5rem; font-weight: 700; }
-    h1 { font-size: 2.4rem; }
-    h2 { font-size: 1.7rem; border-bottom: 2px solid var(--accent); padding-bottom: 0.25rem; }
-    h3 { font-size: 1.3rem; }
-    h4 { font-size: 1.1rem; font-style: italic; }
-    p { margin: 0.9rem 0; }
-    code, pre { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
-    pre { background: var(--code-bg); padding: 0.8rem 1rem; overflow-x: auto; border-radius: 6px; }
-    table { width: 100%; border-collapse: collapse; margin: 1.2rem 0; }
-    th, td { border: 1px solid #ccc; padding: 0.45rem 0.6rem; text-align: left; }
-    th { background: #e9f1ff; font-weight: 600; }
-    figure { margin: 1.6rem 0; text-align: center; }
-    figcaption { font-size: 0.9rem; color: #555; }
-    .note { color: #666; font-style: italic; }
-  </style>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Touch-a-Neuron: Hebbian-Routed Sparse Mixture-of-Experts Models</title>
+    <style>
+        body {
+            font-family: "Computer Modern", Palatino, serif; /* Classic scientific paper font */
+            line-height: 1.6;
+            max-width: 850px;
+            margin: 20px auto;
+            padding: 20px;
+            color: #1a1a1a;
+            background-color: #fff;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+            margin-top: 1.8em;
+            margin-bottom: 0.8em;
+            line-height: 1.2;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.3em;
+        }
+        h1 { font-size: 2.2em; border-bottom: 2px solid #ccc; }
+        h2 { font-size: 1.6em; }
+        h3 { font-size: 1.3em; border-bottom: none; }
+        p {
+            margin: 1em 0;
+            text-align: justify;
+        }
+        .abstract {
+            margin: 2em 0;
+            padding: 1.5em;
+            background: #f8f9fa;
+            border-left: 5px solid #3498db; /* Changed color */
+            font-style: italic;
+        }
+        .keywords {
+            margin-top: -1em;
+            margin-bottom: 2em;
+            font-size: 0.9em;
+            color: #555;
+        }
+        code, .variable {
+            background: #f0f0f0; /* Slightly darker background */
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 1em;
+            border-radius: 4px;
+            overflow-x: auto;
+            border: 1px solid #eee;
+        }
+        figure {
+            margin: 2em 0;
+            text-align: center;
+        }
+        figcaption {
+            font-style: italic;
+            margin-top: 0.5em;
+            color: #666;
+            font-size: 0.9em;
+        }
+        .equation {
+            margin: 1.5em 0;
+            padding: 1em;
+            text-align: center;
+            overflow-x: auto; /* Handle long equations */
+        }
+        .equation-label {
+            float: right;
+            color: #666;
+            font-style: normal;
+        }
+        ul {
+            margin: 1em 0;
+            padding-left: 2em;
+        }
+        li {
+            margin-bottom: 0.5em;
+        }
+        strong {
+            font-weight: bold;
+        }
+        em {
+            font-style: italic;
+        }
+        .reference-list {
+            margin-top: 2em;
+            padding-left: 0;
+            list-style-type: none;
+        }
+        .reference-list li {
+            margin-bottom: 0.8em;
+            padding-left: 1.5em;
+            text-indent: -1.5em;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js" async></script>
 </head>
 <body>
-  <h1>Touch‑a‑Neuron: Hebbian‑Routed Sparse Mixture‑of‑Experts Models</h1>
-  <p><strong>Dario Fumarola</strong><br/>Amazon Web Services – Prototyping Team<br/><span class="note">dario@example.com</span></p>
 
-  <h2>Abstract</h2>
-  <p>Sparse Mixture‑of‑Experts (<strong>MoE</strong>) architectures promise order‑of‑magnitude gains in computational efficiency by activating only a fraction of the parameters per token. Yet, the dynamics of routing sparsity remain opaque to most practitioners. We present <em>Touch‑a‑Neuron</em>, a portable, interactive platform that couples a Hebbian‑routed MoE Transformer with real‑time visual and tactile feedback. Attendees can vary the sparsity level \(T\) (experts per token), observe latency–quality–energy trade‑offs live, and witness emergent expert specialisation via an RGB LED matrix. On Wiki‑QA, our 8‑bit Switch‑Transformer‑Base (256 experts) deployed on a 15 W NVIDIA Jetson Orin Nano achieves up to <strong>22×</strong> energy savings at \(T=16\) with &lt; 1 % F<sub>1</sub> degradation relative to a dense A100 baseline. We detail the model modifications, Hebbian gating rule, hardware instrumentation, and reproducibility toolkit.</p>
+    <h1>Touch-a-Neuron: Hebbian-Routed Sparse Mixture-of-Experts Models</h1>
 
-  <h2>1  Introduction</h2>
-  <p>Transformer models dominate modern NLP yet demand prohibitive FLOPs. Sparse MoE variants (<span>\(\mathrm{Switch}\)</span>, <span>\(\mathrm{GLaM}\)</span>) mitigate this by activating only \(K\ll N\) experts per token. However, routing sparsity also introduces <em>qualitative</em> shifts in model behaviour—specialisation, stability, and carbon cost—that remain largely theoretical. We address this gap with a hands‑on system translating sparsity dynamics into physical intuition.</p>
+    <div class="abstract">
+        <strong>Abstract:</strong> Modern deep learning architectures, particularly large foundation models, grapple with significant computational demands stemming from their dense parameterization and activation patterns. Sparse Mixture-of-Experts (MoE) architectures offer a partial solution by activating only a parameter subset per input token, yet typically employ gating networks trained solely via backpropagation. We introduce "Touch-a-Neuron," a novel MoE framework where the expert routing mechanism is dynamically sculpted using principles derived from Hebbian synaptic plasticity. Instead of exclusive reliance on gradient descent for gate optimization, Touch-a-Neuron leverages a Hebbian update rule to modulate the synaptic efficacy between input representations and expert selection units. This biologically inspired mechanism posits that routing pathways strengthen proportionally to the co-activation statistics of specific input features and the subsequent engagement or utility of downstream experts, echoing the "neurons that fire together, wire together" principle. Such a mechanism intrinsically favors sparse connectivity and functional specialization, potentially yielding models with enhanced adaptability, parameter efficiency, and interpretability. This paper delineates the theoretical underpinnings, architectural design, learning dynamics, and prospective advantages of the Touch-a-Neuron paradigm for Hebbian-routed sparse MoE models.
+    </div>
 
-  <h2>2  Related Work</h2>
-  <ul>
-    <li><strong>Sparse MoE Models:</strong> Switch‑Transformer <em>(Fedus et al., 2021)</em>, GLaM <em>(Du et al., 2022)</em>, and recent reinforcement‑learning gated experts.</li>
-    <li><strong>Interactive ML Visualisations:</strong> TensorBoard projector, DeepDream, and MicroScope—none provide closed‑loop latency‑energy feedback.</li>
-    <li><strong>Neuromorphic Inspiration:</strong> Hebbian plasticity has informed adaptive routing (Malkin & Fiete, 2023), but integration into production‑scale Transformers remains rare.</li>
-    <li><strong>Edge‑ML Instrumentation:</strong> Jetson‑based power profiling (Zhang et al., 2024) enables per‑inference energy attribution.</li>
-  </ul>
+    <p class="keywords">
+        <strong>Keywords:</strong> Mixture of Experts, Sparsity, Hebbian Learning, Biological Plausibility, Neural Networks, Routing Mechanisms, Synaptic Plasticity, Sparse Activation, Computational Neuroscience.
+    </p>
 
-  <h2>3  Methods</h2>
-  <h3>3.1  Model Architecture</h3>
-  <p>We begin with Switch‑Transformer‑Base (256 experts, 223 M parameters). All linear projections are fused into 8‑bit <abbr title="SmoothQuant‑like">smooth‑quantised</abbr> INT8 kernels (TensorRT 9.0). Each expert is a two‑layer MLP with GELU.</p>
+    <h2>1. Introduction</h2>
+    <p>
+        The unprecedented capabilities exhibited by contemporary deep neural networks (DNNs), especially in natural language processing and computer vision, are often paralleled by their immense scale, demanding substantial computational resources for both training and inference (Brown et al., 2020; Dosovitskiy et al., 2020). A primary contributor to this cost is the dense connectivity paradigm, wherein nearly all parameters participate in processing every input instance. This contrasts sharply with biological neural circuits, which demonstrate remarkable efficiency through mechanisms like sparse coding and highly selective neuronal activation (Olshausen & Field, 1997). It is estimated that only a small fraction (1-4%) of cortical neurons are significantly active at any given time for a specific stimulus.
+    </p>
+    <p>
+        Mixture-of-Experts (MoE) models (Jacobs et al., 1991; Shazeer et al., 2017) represent a significant stride towards computational efficiency in deep learning by emulating aspects of this biological specialization. An MoE layer substitutes a monolithic dense layer (e.g., a feed-forward network) with a collection of <span class="variable">N</span> distinct "expert" subnetworks and a "gating" network. For each input token, the gating network dynamically selects a small subset of <span class="variable">k</span> experts (typically <span class="variable">k ≪ N</span>) to process the input. While this drastically reduces the floating-point operations (FLOPs) per token, the total parameter count remains large. The standard approach trains the gating network, often a simple linear transformation followed by a <span class="variable">softmax</span> and <span class="variable">Top-K</span> selection, using the same backpropagation algorithm applied to the experts (Fedus et al., 2021). Although empirically successful, this global, error-driven optimization of routing might not fully capture the local, associative learning thought to underpin pathway formation in biological systems.
+    </p>
+    <p>
+        Donald Hebb's seminal postulate (Hebb, 1949) provides a foundational principle of activity-dependent synaptic plasticity: the strength of a connection between two neurons increases when they are persistently activated concurrently. This concept, often colloquially summarized as "neurons that fire together, wire together," suggests a mechanism for learning based on local correlations, forming specialized neural pathways through experience.
+    </p>
+    <p>
+        We propose <strong>Touch-a-Neuron</strong>, a sparse MoE architecture where the routing mechanism is explicitly governed by Hebbian learning rules. The central hypothesis is that the affinity, or connection strength, between an input representation and the gate controlling access to a specific expert should be learned locally, reflecting the statistical correlation between input features and the activation or selection frequency of that expert. This departs from purely gradient-based gating by incorporating a local, associative update rule alongside the global task-driven optimization of the experts. The name "Touch-a-Neuron" metaphorically signifies the strengthening of specific input-to-expert pathways (analogous to synaptic contacts) based on their correlated activity.
+    </p>
+    <p>
+        <strong>Contributions:</strong>
+        <ul>
+            <li>Proposal of a novel MoE routing mechanism grounded in Hebbian learning principles for dynamic expert selection.</li>
+            <li>Definition of an architectural framework integrating local Hebbian updates for routing weights with standard backpropagation for expert network training.</li>
+            <li>Theoretical discussion of the anticipated learning dynamics and potential benefits, including enhanced specialization, adaptability, computational efficiency, and model interpretability compared to conventional MoE gating strategies.</li>
+        </ul>
+    </p>
 
-  <h4>Hebbian‑Routed Gating</h4>
-  <p>Let \(x_t\in\mathbb{R}^d\) denote the token embedding at time <tspan>\(t\)</tspan>. Scores \(s_{k,t}=w_k^{\top}x_t\) yield routing probabilities \(\pi_{k,t}=\mathrm{softmax}(s_{\cdot,t})_k\). After back‑prop, we apply a local Hebbian update:</p>
-  <p style="text-align:center">\[\Delta w_k = \eta\,(x_t - \bar{x})\,(\pi_{k,t}-\bar{\pi}_k), \quad \eta=2\times10^{-4},\]</p>
-  <p>where \(\bar{x}\) and \(\bar{\pi}_k\) are EMA baselines. This reinforces experts that consistently capture correlated token patterns, analogous to cortical columnar organisation.</p>
+    <h2>2. Related Work</h2>
+    <p>
+        <strong>Mixture-of-Experts (MoE):</strong> Since their inception (Jacobs et al., 1991), MoE models have evolved significantly. Modern sparse MoE layers, particularly in large language models (Shazeer et al., 2017; Fedus et al., 2021; Lepikhin et al., 2020), employ gating networks (typically linear layers with <span class="variable">softmax</span> or variants) and a <span class="variable">Top-K</span> mechanism to achieve conditional computation. Crucial additions include auxiliary load balancing losses to prevent expert under-utilization, a challenge that biologically inspired mechanisms might also face or potentially mitigate differently.
+    </p>
+    <p>
+        <strong>Sparsity in Neural Networks:</strong> Beyond MoE, sparsity is pursued via techniques like weight pruning, activation regularization (e.g., L1 penalty), and dynamic architectures. Attention mechanisms (Vaswani et al., 2017) can be viewed as a form of soft, dense routing, whereas MoE implements hard, sparse routing. Touch-a-Neuron specifically targets sparsity in the *routing decision* via a learning rule distinct from standard gradient descent.
+    </p>
+    <p>
+        <strong>Hebbian Learning:</strong> Hebb's rule (Hebb, 1949) forms the bedrock of synaptic plasticity models. Mathematical formalizations include unsupervised learning rules for feature extraction and dimensionality reduction, such as Oja's rule (Oja, 1982) for principal component analysis and stability, and the Bienenstock-Cooper-Munro (BCM) rule (Bienenstock et al., 1982) which introduces activity-dependent thresholds for bidirectional plasticity (LTP/LTD). Competitive learning (Kohonen, 1982; Grossberg, 1976) often incorporates Hebbian principles with winner-take-all dynamics. While prevalent in computational neuroscience and unsupervised learning, direct application of Hebbian rules for dynamic routing within supervised deep learning frameworks is less explored.
+    </p>
+    <p>
+        <strong>Biologically Inspired AI:</strong> Various models draw inspiration from neuroscience. Spiking Neural Networks (SNNs) explicitly model neural timing and often employ Spike-Timing-Dependent Plasticity (STDP), a temporally precise variant of Hebbian learning (Maass, 1997). Hierarchical Temporal Memory (HTM) (George & Hawkins, 2009) incorporates principles of sparse distributed representations and sequence learning. Touch-a-Neuron distinguishes itself by integrating a specific Hebbian mechanism into the established and performant MoE architecture within the standard deep learning paradigm (using non-spiking units and typically backpropagation for expert training).
+    </p>
 
-  <h3>3.2  Hardware Platform</h3>
-  <table>
-    <thead><tr><th>Module</th><th>Specification</th><th>Role</th></tr></thead>
-    <tbody>
-      <tr><td>Jetson Orin Nano (8 GB)</td><td>6 TFLOPS (FP16); 15 W TDP</td><td>Model inference, Prometheus exporter</td></tr>
-      <tr><td>64 × 16 RGB LED matrix</td><td>1 024 LEDs @ 30 FPS</td><td>Expert activation heat‑map</td></tr>
-      <tr><td>INA260 shunt sensor</td><td>± 15 A, 0.1 mΩ</td><td>Instantaneous power telemetry</td></tr>
-      <tr><td>Raspberry Pi 5</td><td>4 × A76 2.4 GHz</td><td>Grafana dashboard, rotary dial UI</td></tr>
-    </tbody>
-  </table>
+    <h2>3. The Touch-a-Neuron Model Architecture</h2>
+    <p>
+        Let us consider an MoE layer designed to replace a standard feed-forward network (FFN) block within a larger architecture (e.g., a Transformer). The input to this layer is a token representation <span class="variable">\( \mathbf{x} \in \mathbb{R}^d \)</span>. The layer comprises <span class="variable">N</span> expert networks, <span class="variable">\( E_1, \dots, E_N \)</span>, and a specialized routing mechanism.
+    </p>
 
-  <h3>3.3  Instrumentation &amp; Metrics</h3>
-  <ul>
-    <li><strong>Latency (ms):</strong> median wall‑clock per 32‑token batch.</li>
-    <li><strong>Quality:</strong> F<sub>1</sub> (Wiki‑QA), BLEU (WMT‑14 En‑De), ROUGE‑L (CNN/DailyMail).</li>
-    <li><strong>Energy (J):</strong> time‑integrated \(P(t)\) sampled at 1 kHz.</li>
-  </ul>
+    <h3>3.1 Expert Networks</h3>
+    <p>
+        Each expert <span class="variable">\( E_i : \mathbb{R}^d \to \mathbb{R}^d \)</span> is an independent neural network, typically parameterized identically (e.g., a two-layer MLP with ReLU or GeLU activation) but possessing distinct weights <span class="variable">\( \theta_{E_i} \)</span>. They process the input <span class="variable">\( \mathbf{x} \)</span> only if selected by the router.
+    </p>
 
-  <h2>4  Experimental Setup</h2>
-  <p>We evaluate sparsity levels \(T\in\{1,2,4,8,16,32\}\). For each \(T\) we warm‑up 100 iterations, then record 1 000 inference runs. Dense baseline uses the same weights on an NVIDIA A100 (80 GB, 400 W).</p>
+    <h3>3.2 Standard MoE Routing (Baseline Comparison)</h3>
+    <p>
+        In a conventional sparse MoE layer, routing involves a trainable gating weight matrix <span class="variable">\( W_g \in \mathbb{R}^{d \times N} \)</span>. The process is typically:
+        <ol>
+            <li>Compute routing logits: <span class="variable">\( \mathbf{h} = \mathbf{x}^T W_g \)</span>, where <span class="variable">\( \mathbf{h} \in \mathbb{R}^N \)</span>.</li>
+            <li>Select indices <span class="variable">\( \mathcal{T} = \text{TopKIndices}(\mathbf{h}, k) \)</span> corresponding to the <span class="variable">k</span> largest logit values.</li>
+            <li>Compute sparse gating weights <span class="variable">\( \mathbf{g} \in \mathbb{R}^N \)</span>, often via <span class="variable">softmax</span> over the selected logits:
+                <div class="equation">
+                    $$ g_i = \begin{cases} \frac{\exp(h_i / \tau)}{\sum_{j \in \mathcal{T}} \exp(h_j / \tau)} & \text{if } i \in \mathcal{T} \\ 0 & \text{otherwise} \end{cases} $$
+                    <span class="equation-label">(1)</span>
+                </div>
+                where <span class="variable">\( \tau \)</span> is a temperature parameter.
+            </li>
+            <li>Compute the layer output as a weighted sum of expert outputs:
+                <div class="equation">
+                    $$ \mathbf{y} = \sum_{i=1}^N g_i E_i(\mathbf{x}) = \sum_{i \in \mathcal{T}} g_i E_i(\mathbf{x}) $$
+                    <span class="equation-label">(2)</span>
+                </div>
+            </li>
+        </ol>
+        The gating matrix <span class="variable">\( W_g \)</span> is trained via backpropagation based on the downstream task loss.
+    </p>
 
-  <h2>5  Results</h2>
-  <figure>
-    <img src="placeholder‑pareto.svg" alt="Latency‑Energy Pareto curve" style="max-width:100%;height:auto;" />
-    <figcaption>Figure 1 — Pareto frontier for latency vs energy at varying sparsity levels on Wiki‑QA.</figcaption>
-  </figure>
+    <h3>3.3 Touch-a-Neuron Hebbian Routing</h3>
+    <p>
+        The core innovation of Touch-a-Neuron lies in replacing or augmenting the trainable gating matrix <span class="variable">\( W_g \)</span> with a Hebbian Affinity Matrix <span class="variable">\( W_H \in \mathbb{R}^{d \times N} \)</span>, whose elements <span class="variable">\( W_{H,ji} \)</span> represent the learned associative strength between the <span class="variable">j</span>-th input feature and the gate for expert <span class="variable">i</span>. The routing proceeds as follows:
+    </p>
+        <ol>
+            <li><strong>Affinity Calculation:</strong> Compute raw affinities based on the current state of <span class="variable">\( W_H \)</span>:
+                <div class="equation">
+                    $$ \mathbf{a} = \mathbf{x}^T W_H $$
+                    <span class="equation-label">(3)</span>
+                </div>
+                 Here, <span class="variable">\( a_i \in \mathbb{R} \)</span> quantifies the match between the input pattern <span class="variable">\( \mathbf{x} \)</span> and the learned preference profile of expert <span class="variable">i</span> encoded in the <span class="variable">i</span>-th column of <span class="variable">\( W_H \)</span>.
+            </li>
+            <li><strong>Expert Selection (Top-K):</strong> Select the set of indices <span class="variable">\( \mathcal{T} = \text{TopKIndices}(\mathbf{a}, k) \)</span> corresponding to the top <span class="variable">k</span> affinities. This step enforces the desired computational sparsity.
+            </li>
+            <li><strong>Gating Value Calculation:</strong> Compute the final gating values <span class="variable">\( \mathbf{g} \in \mathbb{R}^N \)</span>, typically using a <span class="variable">softmax</span> restricted to the selected experts <span class="variable">\( \mathcal{T} \)</span>:
+                <div class="equation">
+                    $$ g_i = \begin{cases} \frac{\exp(a_i / \tau)}{\sum_{j \in \mathcal{T}} \exp(a_j / \tau)} & \text{if } i \in \mathcal{T} \\ 0 & \text{otherwise} \end{cases} $$
+                    <span class="equation-label">(4)</span>
+                </div>
+            </li>
+            <li><strong>Layer Output:</strong> Compute the final output identically to standard MoE, using the Hebbian-derived gates:
+                <div class="equation">
+                    $$ \mathbf{y} = \sum_{i \in \mathcal{T}} g_i E_i(\mathbf{x}) $$
+                    <span class="equation-label">(5)</span>
+                </div>
+            </li>
+            <li><strong>Hebbian Update Rule for <span class="variable">\( W_H \)</span>:</strong> This is the defining step. After or during the forward pass, the affinity matrix <span class="variable">\( W_H \)</span> is updated based on local Hebbian principles. The general form correlates pre-synaptic activity (<span class="variable">\( x_j \)</span>) with post-synaptic activity (related to expert selection/activation, represented by <span class="variable">\( g_i \)</span> or a related signal <span class="variable">\( s_i \)</span>).
+                <div class="equation">
+                    $$ \Delta W_{H,ji} \propto \eta \cdot f(s_i) \cdot h(x_j) $$
+                    <span class="equation-label">(6)</span>
+                </div>
+                 where <span class="variable">\( \Delta W_{H,ji} \)</span> is the change in the weight connecting input feature <span class="variable">j</span> to the gate of expert <span class="variable">i</span>, <span class="variable">\( \eta \)</span> is the Hebbian learning rate, <span class="variable">\( s_i \)</span> is a measure of post-synaptic activation for expert <span class="variable">i</span> (e.g., <span class="variable">\( s_i = g_i \)</span> or <span class="variable">\( s_i = \mathbb{I}(i \in \mathcal{T}) \)</span>, the indicator function), and <span class="variable">\( f(\cdot), h(\cdot) \)</span> are typically non-decreasing functions (often identity).
 
-  <table>
-    <thead><tr><th>T</th><th>Latency (ms)</th><th>F<sub>1</sub> (%)</th><th>Energy (J)</th><th>A100 Dense (J)</th></tr></thead>
-    <tbody>
-      <tr><td>1</td><td>7.4 ± 0.3</td><td>81.0</td><td>0.51</td><td rowspan="6">11.9</td></tr>
-      <tr><td>2</td><td>7.8</td><td>82.6</td><td>0.57</td></tr>
-      <tr><td>4</td><td>8.9</td><td>84.2</td><td>0.68</td></tr>
-      <tr><td>8</td><td>12.6</td><td>84.7</td><td>0.93</td></tr>
-      <tr><td>16</td><td>18.3</td><td>85.1</td><td>1.24</td></tr>
-      <tr><td>32</td><td>31.7</td><td>85.5</td><td>1.92</td></tr>
-    </tbody>
-  </table>
-  <p>\(T=16\) yields <strong>22×</strong> energy savings vs dense with a 0.7 % absolute F<sub>1</sub> drop.</p>
+                 <p>Crucially, simple Hebbian rules (<span class="variable">\( \Delta W_{H,ji} = \eta g_i x_j \)</span>) are unstable. Stabilized forms are necessary:</p>
+                 <ul>
+                    <li><strong>Oja's Rule (Normalization):</strong> Introduces a subtractive normalization term preventing unbounded weight growth. Suitable for principal component analysis-like behavior.
+                        <div class="equation">
+                            $$ \Delta W_{H,ji} = \eta \cdot g_i \cdot (x_j - g_i W_{H,ji}) $$
+                            <span class="equation-label">(7)</span>
+                        </div>
+                    </li>
+                    <li><strong>BCM Rule (Sliding Threshold):</strong> Incorporates a dynamic threshold <span class="variable">\( \theta_i \)</span> that adapts based on the recent average activity of the post-synaptic unit, enabling both Long-Term Potentiation (LTP) and Long-Term Depression (LTD).
+                        <div class="equation">
+                            $$ \Delta W_{H,ji} = \eta \cdot g_i \cdot (g_i - \theta_i) \cdot x_j \quad \text{with} \quad \dot{\theta}_i \propto (g_i^2 - \theta_i) $$
+                            <span class="equation-label">(8)</span>
+                        </div>
+                         This allows for competition and prevents saturation. <span class="variable">\( \theta_i \)</span> tracks the expected value of <span class="variable">\( g_i^2 \)</span>.
+                    </li>
+                    <li><strong>Weight Decay / Clipping:</strong> Simpler methods like adding an L2 decay term (<span class="variable">\( -\lambda W_{H,ji} \)</span>) to the update or clipping weights to a predefined range can enforce stability.</li>
+                    <li><strong>Competitive Mechanisms:</strong> Incorporating lateral inhibition between expert gates during the update (e.g., decreasing weights to non-selected experts when a selected expert's weights are potentiated) can enhance specialization. This could involve normalizing columns of <span class="variable">\( W_H \)</span> or adding explicit inhibitory terms based on <span class="variable">\( g_j \)</span> for <span class="variable">\( j \neq i \)</span>.</li>
+                 </ul>
+                 The update rule effectively implements: "If input feature <span class="variable">\( x_j \)</span> is active *and* expert <span class="variable">i</span> is selected/active (<span class="variable">\( s_i > 0 \)</span>), strengthen the association <span class="variable">\( W_{H,ji} \)</span> (subject to stabilization)." This allows <span class="variable">\( W_H \)</span> to learn routing preferences based on co-occurrence statistics.
+            </li>
+        </ol>
 
-  <h3>5.1  Emergent Specialisation</h3>
-  <p>Using t‑SNE on expert centroids, we observe clusters correlating with parts‑of‑speech: noun phrases concentrate in 12 experts, while syntactic glue tokens (e.g., determiners) distribute evenly. Cosine similarity within specialised experts increases by 0.38 ± 0.04 after 30 k tokens of Hebbian updates.</p>
 
-  <h2>6  Discussion</h2>
-  <p>The energy‑quality frontier indicates diminishing returns beyond \(T=16\) for edge deployment. Hebbian updates accelerate specialisation but introduce <em>catastrophic gating</em> if \(\eta&gt;3\times10^{-4}\). Future work includes KL‑regularised plasticity and on‑device sparsity search.</p>
+    <h2>4. Learning Dynamics and Integration</h2>
+    <p>
+        Training a Touch-a-Neuron model involves the interplay of two distinct learning mechanisms operating on different timescales and principles:
+    </p>
+    <ol>
+        <li>
+            <strong>Expert Parameter Optimization (<span class="variable">\(\theta_E\)</span> via Backpropagation):</strong> The weights <span class="variable">\( \theta_{E_i} \)</span> of the expert networks <span class="variable">\( E_i \)</span> are updated using standard gradient descent (e.g., AdamW) based on the overall task loss <span class="variable">\( \mathcal{L}_{\text{task}} \)</span>. Gradients flow back through the computational graph, including the selected experts (<span class="variable">\( i \in \mathcal{T} \)</span>), weighted by their corresponding gating values <span class="variable">\( g_i \)</span>. Assuming the gating values <span class="variable">\( g_i \)</span> are treated as constants with respect to the expert parameters during the backward pass for experts (a common practice in MoE):
+            <div class="equation">
+                $$ \frac{\partial \mathcal{L}_{\text{task}}}{\partial \theta_{E_i}} \approx g_i \cdot \frac{\partial E_i(\mathbf{x})}{\partial \theta_{E_i}} \cdot \frac{\partial \mathcal{L}_{\text{task}}}{\partial \mathbf{y}} \quad \text{for } i \in \mathcal{T} $$
+                <span class="equation-label">(9)</span>
+            </div>
+             This process optimizes experts to perform well on the inputs they are routed.
+        </li>
+        <li>
+            <strong>Hebbian Router Adaptation (<span class="variable">\(W_H\)</span> via Local Rule):</strong> The Hebbian affinity matrix <span class="variable">\( W_H \)</span> is updated according to one of the stabilized rules (Eq. 7, 8, etc.). This update is typically performed after each forward pass (or mini-batch) and depends only on local information: the input <span class="variable">\( \mathbf{x} \)</span>, the resulting gating signals <span class="variable">\( \mathbf{g} \)</span> (or derived activation <span class="variable">\( \mathbf{s} \)</span>), and the current state of <span class="variable">\( W_H \)</span>. The Hebbian learning rate <span class="variable">\( \eta \)</span> is a separate hyperparameter from the optimizer's learning rate for the experts.
+        </li>
+    </ol>
+    <p>
+        <strong>Interaction Dynamics:</strong> The system exhibits a symbiotic learning loop. The Hebbian router (<span class="variable">\( W_H \)</span>) learns to associate input patterns with experts based on co-activation (<span class="variable">\(\mathbf{x}\)</span> and <span class="variable">\(\mathbf{g}\)</span>). Backpropagation refines the selected experts (<span class="variable">\( E_i \)</span>) to better contribute to minimizing the task loss. Improved expert performance implicitly validates successful routing decisions, reinforcing the Hebbian associations that led to good outcomes (as reflected in subsequent loss gradients influencing future inputs/activations, though not directly adjusting <span class="variable">\( W_H \)</span> via gradient). Conversely, poor expert performance on routed inputs might lead to lower activation/selection signals <span class="variable">\( g_i \)</span> in the future, weakening the corresponding Hebbian associations if the rule incorporates such feedback (e.g., via task-modulated Hebbian learning, although simpler forms are proposed first).
+    </p>
+    <p>
+        <strong>Auxiliary Losses:</strong> Despite the potential for self-organization via Hebbian learning and competition, explicit load balancing might still be necessary, especially during initial training phases. A standard load balancing loss (Shazeer et al., 2017; Fedus et al., 2021), encouraging uniform distribution of tokens across experts over a batch, can be added to the main task loss:
+        <div class="equation">
+            $$ \mathcal{L}_{\text{aux}} = \alpha \cdot N \cdot \sum_{i=1}^N f_i P_i $$
+            <span class="equation-label">(10)</span>
+        </div>
+        where <span class="variable">\( f_i \)</span> is the fraction of tokens dispatched to expert <span class="variable">i</span> in a batch, <span class="variable">\( P_i \)</span> is the average gating value <span class="variable">\( g_i \)</span> for expert <span class="variable">i</span> over the batch, and <span class="variable">\( \alpha \)</span> is a scaling coefficient. This loss term is typically applied only to the gradients of the gating mechanism if it were trainable (<span class="variable">\( W_g \)</span>). In the Touch-a-Neuron context, its role might be adapted, possibly influencing the Hebbian update indirectly (e.g., modulating <span class="variable">\( \eta \)</span>) or used solely for monitoring.
+    </p>
 
-  <h2>7  Conclusion</h2>
-  <p><em>Touch‑a‑Neuron</em> converts a research‑grade MoE into a hands‑on artefact, equipping practitioners with quantitative intuition for sparsity. Our findings support deploying moderate sparsity (\(T=8\) to 16) on low‑power devices without material quality loss.</p>
 
-  <h2>8  Reproducibility</h2>
-  <ul>
-    <li><strong>Code:</strong> <code>github.com/your‑org/touch‑a‑neuron</code> (Apache‑2.0).</li>
-    <li><strong>Docker:</strong> <code>docker compose up</code> spins Jetson, Prometheus, Grafana.</li>
-    <li><strong>Datasets:</strong> Script downloads Wiki‑QA, WMT‑14, CNN/DM via <code>wget</code>.</li>
-    <li><strong>Weights:</strong> 2.1 GB S3 public link.</li>
-  </ul>
+    <h2>5. Potential Advantages and Challenges</h2>
 
-  <h2>Acknowledgements</h2>
-  <p>We thank Emilio Ferrara and Luca Luceri for early feedback on routing interpretability, and the AWS ML‑Acc‑Eng team for loaning hardware.</p>
+    <h3>5.1 Advantages</h3>
+    <ul>
+        <li><strong>Biological Plausibility and Associative Learning:</strong> Directly incorporates a fundamental learning principle observed in nervous systems, potentially leading to routing mechanisms that capture statistical regularities in the data more naturally.</li>
+        <li><strong>Enhanced Specialization:</strong> Hebbian learning, particularly with competitive mechanisms, naturally drives units (here, expert gates) to become selective for specific input patterns, potentially leading to more distinct and interpretable expert functions.</li>
+        <li><strong>Adaptability and Online Learning:</strong> Local Hebbian updates respond directly to incoming data statistics. This could offer advantages in non-stationary environments or continual learning settings compared to gradient-based routing requiring propagation of a global error signal.</li>
+        <li><strong>Computational Properties:</strong> Retains the primary benefit of sparse MoE (reduced FLOPs per token). The Hebbian update itself (typically vector outer products and element-wise operations) is computationally efficient.</li>
+        <li><strong>Interpretability:</strong> The columns of the learned affinity matrix <span class="variable">\( W_H \)</span> might represent recognizable input features or patterns that preferentially activate each expert, potentially offering clearer insights into the routing decisions than the weights of a standard backprop-trained gating network.</li>
+        <li><strong>Potential for Unsupervised Pre-training:</strong> The Hebbian mechanism could potentially learn meaningful routing affinities from unlabeled data before supervised fine-tuning commences.</li>
+    </ul>
 
-  <footer>
-    <p class="note">Last updated: 5 May 2025 — Made with ♥ and MathJax</p>
-  </footer>
+    <h3>5.2 Challenges</h3>
+    <ul>
+        <li><strong>Stability of Hebbian Learning:</strong> Requires careful selection of stabilized Hebbian rules (e.g., Oja, BCM) and associated hyperparameters (<span class="variable">\(\eta\)</span>, decay rates, thresholds) to prevent runaway weight growth or collapse.</li>
+        <li><strong>Coordination between Learning Rules:</strong> Ensuring effective synergy between the fast, local Hebbian updates of <span class="variable">\( W_H \)</span> and the potentially slower, global backpropagation updates of <span class="variable">\( \theta_E \)</span> is critical. Mismatched timescales or conflicting updates could impede learning.</li>
+        <li><strong>Expert Under-utilization ("Dead Experts"):</strong> Similar to standard MoE, ensuring all experts remain viable and receive sufficient activation for learning is crucial. While competition in Hebbian learning might help, explicit load balancing or initialization strategies may still be needed.</li>
+        <li><strong>Hyperparameter Sensitivity:</strong> Introduces new hyperparameters specific to the Hebbian learning rule, potentially increasing the complexity of model tuning.</li>
+        <li><strong>Theoretical Guarantees:</strong> The convergence properties and theoretical behavior of this hybrid system (local Hebbian routing + global gradient-based expert training) are complex and require formal analysis.</li>
+        <li><strong>Initialization Sensitivity:</strong> The initial state of <span class="variable">\( W_H \)</span> could strongly influence the learned routing patterns and overall convergence.</li>
+    </ul>
+
+
+    <h2>6. Future Work</h2>
+    <p>
+        The Touch-a-Neuron concept opens several avenues for future research:
+    </p>
+    <ul>
+        <li><strong>Empirical Validation:</strong> Rigorous benchmarking on standard tasks (e.g., language modeling on The Pile, machine translation on WMT, image classification on ImageNet) against state-of-the-art standard MoE models is paramount.</li>
+        <li><strong>Comparative Analysis of Hebbian Rules:</strong> Systematically evaluate different stabilized Hebbian rules (Oja, BCM, covariance rules, potentially STDP-inspired variants if temporal dynamics are considered) for router performance and stability.</li>
+        <li><strong>Incorporating Competition:</strong> Design and test explicit competitive mechanisms within the Hebbian update (e.g., forms of lateral inhibition, subtractive normalization across experts) to enhance specialization and load balancing.</li>
+        <li><strong>Unsupervised/Self-Supervised Pre-training:</strong> Investigate the feasibility and benefit of pre-training the Hebbian router <span class="variable">\( W_H \)</span> on large unlabeled datasets before supervised training of the full model.</li>
+        <li><strong>Continual Learning Scenarios:</strong> Evaluate the adaptability of Touch-a-Neuron models in settings where the data distribution shifts over time, comparing against baseline MoEs.</li>
+        <li><strong>Theoretical Analysis:</strong> Develop mathematical models to analyze the stability, convergence, and capacity properties of the combined Hebbian-routing and backpropagation-expert learning system.</li>
+        <li><strong>Hybrid Approaches:</strong> Explore models where routing decisions combine both Hebbian affinities and signals derived from backpropagation (e.g., using Hebbian learning to initialize or regularize a standard gating network).</li>
+        <li><strong>Neuromorphic Hardware Potential:</strong> Investigate potential implementation advantages on neuromorphic hardware platforms designed for efficient simulation of synaptic plasticity rules.</li>
+    </ul>
+
+    <h2>7. Conclusion</h2>
+    <p>
+        Touch-a-Neuron presents a conceptual framework for augmenting sparse Mixture-of-Experts models with biologically plausible Hebbian learning principles applied directly to the expert routing mechanism. By enabling routing affinities to emerge from local correlations between input features and expert selection, this approach offers a compelling alternative or complement to purely gradient-optimized gating networks. The potential for enhanced specialization, improved adaptability to changing data statistics, and greater interpretability motivates its investigation. While significant challenges related to learning stability and the effective coordination of distinct learning rules must be addressed, the Touch-a-Neuron paradigm represents a promising direction for developing more efficient, adaptive, and perhaps ultimately more brain-like large-scale artificial intelligence systems. Further empirical and theoretical work is required to fully assess its viability and potential impact.
+    </p>
+
+    <h2>8. References</h2>
+    <ul class="reference-list">
+        <li>Bienenstock, E. L., Cooper, L. N., & Munro, P. W. (1982). Theory for the development of neuron selectivity: orientation specificity and binocular interaction in visual cortex. <em>Journal of Neuroscience</em>, 2(1), 32-48.</li>
+        <li>Brown, T. B., Mann, B., Ryder, N., Subbiah, M., Kaplan, J., Dhariwal, P., ... & Amodei, D. (2020). Language models are few-shot learners. <em>Advances in Neural Information Processing Systems</em>, 33, 1877-1901.</li>
+        <li>Dosovitskiy, A., Beyer, L., Kolesnikov, A., Weissenborn, D., Zhai, X., Unterthiner, T., ... & Houlsby, N. (2020). An image is worth 16x16 words: Transformers for image recognition at scale. <em>arXiv preprint arXiv:2010.11929</em>.</li>
+        <li>Fedus, W., Zoph, B., & Shazeer, N. (2021). Switch transformers: Scaling to trillion parameter models with simple and efficient sparsity. <em>arXiv preprint arXiv:2101.03961</em>.</li>
+        <li>George, D., & Hawkins, J. (2009). Towards a mathematical theory of cortical micro-circuits. <em>PLoS Computational Biology</em>, 5(10), e1000532.</li>
+        <li>Grossberg, S. (1976). Adaptive pattern classification and universal recoding: I. Parallel development and coding of neural feature detectors. <em>Biological Cybernetics</em>, 23(3), 121-134.</li>
+        <li>Hebb, D. O. (1949). <em>The organization of behavior: A neuropsychological theory</em>. Wiley.</li>
+        <li>Jacobs, R. A., Jordan, M. I., Nowlan, S. J., & Hinton, G. E. (1991). Adaptive mixtures of local experts. <em>Neural Computation</em>, 3(1), 79-87.</li>
+        <li>Kohonen, T. (1982). Self-organized formation of topologically correct feature maps. <em>Biological Cybernetics</em>, 43(1), 59-69.</li>
+        <li>Lepikhin, D., Lee, H., Xu, Y., Chen, D., Firat, O., Huang, Y., ... & Chen, Z. (2020). Gshard: Scaling giant models with conditional computation and automatic sharding. <em>arXiv preprint arXiv:2006.16668</em>.</li>
+        <li>Maass, W. (1997). Networks of spiking neurons: the third generation of neural network models. <em>Neural Networks</em>, 10(9), 1659-1671.</li>
+        <li>Oja, E. (1982). Simplified neuron model as a principal component analyzer. <em>Journal of Mathematical Biology</em>, 15(3), 267-273.</li>
+        <li>Olshausen, B. A., & Field, D. J. (1997). Sparse coding with an overcomplete basis set: A strategy employed by V1? <em>Vision Research</em>, 37(23), 3311-3325.</li>
+        <li>Shazeer, N., Mirhoseini, A., Maziarz, K., Davis, A., Le, Q., Hinton, G., & Dean, J. (2017). Outrageously large neural networks: The sparsely-gated mixture-of-experts layer. <em>arXiv preprint arXiv:1701.06538</em>.</li>
+        <li>Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., ... & Polosukhin, I. (2017). Attention is all you need. <em>Advances in Neural Information Processing Systems</em>, 30.</li>
+    </ul>
+
 </body>
 </html>
