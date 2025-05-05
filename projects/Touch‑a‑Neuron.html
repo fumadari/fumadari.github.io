@@ -144,6 +144,37 @@
 </p>
 
 
+
+
+    <h2>2. Related Work</h2>
+<p>
+    The Touch-a-Neuron framework intersects several key areas of machine learning and computational neuroscience research: Sparse Mixture-of-Experts, routing mechanisms, Hebbian learning, and biologically inspired neural computation.
+</p>
+
+<h3>2.1 Sparse Mixture-of-Experts and Routing</h3>
+<p>
+    The foundational concept of Mixture-of-Experts (MoE) dates back to Jacobs et al. (1991), proposing a divide-and-conquer strategy where different subnetworks ('experts') specialize on different parts of the input space, guided by a gating network. The modern resurgence, particularly in large language models, was catalyzed by Shazeer et al. (2017) who introduced *sparse* MoE layers. In this paradigm, each input token is routed to only a small, fixed number (<span class="variable">k</span>, typically 1 or 2) of experts out of a larger pool (<span class="variable">N</span>), significantly reducing computational cost while allowing model capacity to scale dramatically (Lepikhin et al., 2020; Fedus et al., 2021; Du et al., 2022).
+</p>
+<p>
+    Crucially, the standard routing mechanism involves a gating network, often a simple linear layer followed by a softmax function, that computes assignment probabilities (or logits) for each expert based on the input representation <span class="variable">\(\mathbf{x}\)</span>. The top-<span class="variable">k</span> experts with the highest scores are selected. The parameters of this gating network, like those of the experts, are typically trained end-to-end using backpropagation, guided by the overall task loss. A significant challenge in this standard setup is ensuring load balancing across experts to prevent only a few experts from being consistently chosen. This is commonly addressed by introducing auxiliary loss functions that incentivize balanced routing assignments (Shazeer et al., 2017; Lepikhin et al., 2020). Other variations include noisy top-<span class="variable">k</span> gating to encourage exploration (Shazeer et al., 2017) or exploring alternative routing schemes like hashing (Roller et al., 2021). However, these approaches predominantly rely on gradient descent derived from global objectives or heuristics for balancing, rather than local, activity-dependent learning rules for association formation.
+</p>
+
+<h3>2.2 Hebbian Learning in Neural Networks</h3>
+<p>
+    Hebbian learning, stemming from Donald Hebb's postulate (1949), provides a biologically plausible mechanism for synaptic plasticity based on local correlations. In its simplest form, the change in synaptic weight <span class="variable">\(\Delta w_{ij}\)</span> between a pre-synaptic neuron <span class="variable">\(j\)</span> and a post-synaptic neuron <span class="variable">\(i\)</span> is proportional to the product of their activations (<span class="variable">\(\Delta w_{ij} \propto x_j y_i\)</span>). This principle underlies various unsupervised learning rules and models, including principal component analysis (Oja's rule, 1982), associative memories (Hopfield, 1982 - although incorporating decay), and self-organizing maps (Kohonen, 1982).
+</p>
+<p>
+    In the context of deep learning, Hebbian-like rules have been explored, often for unsupervised pre-training, regularization, or as components within more complex architectures aiming for biological plausibility (e.g., Krotov & Hopfield, 2016; Pogodin et al., 2021). These efforts typically focus on learning representations within layers or building associative memories. However, the direct application of Hebbian principles to dynamically govern the *routing* decisions in a conditional computation framework like MoE remains largely unexplored. Existing Hebbian methods primarily focus on adjusting weights *within* processing units or layers based on co-activation, not adjusting the *connectivity map* itself on-the-fly for input-dependent pathway selection in the MoE sense.
+</p>
+
+<h3>2.3 Biologically Plausible Sparsity and Local Learning</h3>
+<p>
+    The brain operates with remarkable energy efficiency, partially attributed to sparse coding and activation patterns (Olshausen & Field, 1997; Lennie, 2003). Neurons develop specialized responses, and only a fraction are strongly active for any given stimulus. Computational models aiming for biological plausibility often incorporate local learning rules (like Hebbian variants or Spike-Timing-Dependent Plasticity - STDP) and mechanisms that promote sparsity, such as lateral inhibition or homeostatic plasticity that regulates firing rates (Foldiak, 1990; Bienenstock et al., 1982).
+</p>
+<p>
+    Touch-a-Neuron draws inspiration from this confluence. While standard MoE achieves *activation* sparsity (only <span class="variable">k</span> experts compute), the proposed Hebbian routing introduces a learning mechanism grounded in local activity correlations, akin to biological synaptic modification. This contrasts with global gradient-based routing optimization, potentially offering a different inductive bias—one favouring specialization based on direct, repeated input-expert co-activation rather than solely on downstream task performance contribution. It attempts to embed a form of associative learning directly into the routing fabric of the network. Our approach differs from purely biologically motivated models by integrating this local rule within a framework where the experts themselves are still trained via efficient backpropagation, aiming for a hybrid model that leverages strengths from both paradigms.
+</p>
+
     
 </body>
 </html>
