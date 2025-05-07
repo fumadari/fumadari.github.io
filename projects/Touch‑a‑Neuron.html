@@ -259,6 +259,81 @@
         Similar to <span class="variable">\(k_{DA}\)</span>, the parameters <span class="variable">\(k_{5HT\_entropy}\)</span> and <span class="variable">\(k_{5HT\_risk}\)</span> are controlled externally in this study to simulate varying serotonergic states. The interplay between these modulatory parameters allows for a rich spectrum of behavioral responses.
     </p>
 
+
+
+
+        <h2>4. Implementation and Simulation Environment: "Pac-Mind" Case Study</h2>
+    <p>
+        To investigate the effects of the proposed neuromodulatory controls, we implement the agent within a dynamic grid-world environment termed "Pac-Mind." This environment, inspired by the classic arcade game, provides a suitable testbed for evaluating an agent's ability to balance reward acquisition with risk avoidance under varying internal states.
+    </p>
+
+    <h3>4.1 Environment Details</h3>
+    <p>
+        The Pac-Mind environment consists of a <span class="variable">\(N \times M\)</span> grid (e.g., 20x20 cells) containing walls, collectible pellets, power pellets, and one or more adversarial "ghosts."
+        <ul>
+            <li><strong>Walls:</strong> Impassable cells that define the maze structure.</li>
+            <li><strong>Pellets:</strong> Stationary items that, when collected by the agent, yield a small positive reward (e.g., <span class="variable">\(R_{pellet} = +1\)</span>) and are removed from the grid.</li>
+            <li><strong>Power Pellets:</strong> Special stationary items. Collecting a power pellet yields a larger positive reward (e.g., <span class="variable">\(R_{power\_pellet} = +10\)</span>) and temporarily renders ghosts vulnerable. During this vulnerability period, contacting a ghost yields a significant positive reward (e.g., <span class="variable">\(R_{eat\_ghost} = +50\)</span>) and temporarily removes the ghost from play.</li>
+            <li><strong>Ghosts:</strong> Adversarial entities that move within the maze. If a ghost occupies the same cell as the agent (and is not vulnerable), the agent incurs a large negative reward (e.g., <span class="variable">\(R_{collision} = -100\)</span>), and the episode typically terminates or the agent is reset. Ghost movement can be programmed with simple chase heuristics (e.g., moving towards the agent's current location) or learned through separate RL policies.</li>
+        </ul>
+        An episode concludes when the agent collides with a non-vulnerable ghost, all pellets are collected, or a maximum time step limit is reached. The agent's objective is to maximize its cumulative score. Figure 4 (to be added) will show a schematic of the Pac-Mind environment layout and its key components.
+    </p>
+
+    <h3>4.2 Agent Architecture and State Representation</h3>
+    <p>
+        The Pac-Mind agent employs the Actor-Critic architecture described in Section 3. To process the visual information from the grid world, the agent utilizes a Convolutional Neural Network (CNN) as its primary feature extractor.
+    </p>
+    <p>
+        <strong>State Representation:</strong> The input to the agent at each time step <span class="variable">\(S_t\)</span> is a multi-channel image representing an egocentric window (e.g., an <span class="variable">\(11 \times 11\)</span> patch) centered on the agent's current position. Each channel in this input tensor encodes the presence of a specific entity within the window:
+        <ul>
+            <li>Channel 1: Wall locations.</li>
+            <li>Channel 2: Pellet locations.</li>
+            <li>Channel 3: Power pellet locations.</li>
+            <li>Channel 4: Ghost locations (non-vulnerable).</li>
+            <li>Channel 5: Vulnerable ghost locations.</li>
+            <li>(Optional) Channel 6: Agent's own location (typically center of window).</li>
+        </ul>
+        This egocentric representation provides local contextual information necessary for decision-making.
+    </p>
+    <p>
+        <strong>Network Architecture:</strong> The multi-channel input is fed into a CNN comprising typically two to three convolutional layers (e.g., with 16, 32, 64 filters, ReLU activations, and appropriate kernel sizes/strides), followed by a flattening operation. The output of the CNN serves as a shared feature vector. This feature vector is then passed to two separate fully connected output heads:
+        <ul>
+            <li><strong>Actor Head:</strong> A linear layer followed by a softmax activation function, outputting the probabilities <span class="variable">\(\pi(A_t|S_t; \theta)\)</span> for the four possible actions (Up, Down, Left, Right).</li>
+            <li><strong>Critic Head:</strong> A linear layer outputting the scalar state value <span class="variable">\(V(S_t; w)\)</span>.</li>
+        </ul>
+        A diagram of this network architecture will be provided in Figure 5 (to be added).
+    </p>
+
+    <h3>4.3 Software and Simulation Parameters</h3>
+    <p>
+        The simulation environment and agent are implemented in Python. Neural network components and reinforcement learning algorithms leverage standard deep learning libraries such as PyTorch or TensorFlow. The environment itself is designed to be compatible with common RL interface standards, similar to OpenAI Gym (Brockman et al., 2016).
+    </p>
+    <p>
+        Key simulation parameters include:
+        <ul>
+            <li>Learning rates: <span class="variable">\(\alpha_a\)</span> for the actor, <span class="variable">\(\alpha_c\)</span> for the critic (e.g., <span class="variable">\(10^{-4}\)</span> to <span class="variable">\(10^{-3}\)</span>).</li>
+            <li>Discount factor: <span class="variable">\(\gamma\)</span> (e.g., 0.99).</li>
+            <li>Neuromodulator coefficients: <span class="variable">\(k_{DA}\)</span>, <span class="variable">\(k_{5HT\_entropy}\)</span>, and <span class="variable">\(k_{5HT\_risk}\)</span> are varied across experimental conditions as described below.</li>
+            <li>Training duration: Specified by a total number of training episodes or environment steps.</li>
+            <li>Optimizer: Adam optimizer (Kingma & Ba, 2014) is commonly used for training the network parameters.</li>
+        </ul>
+    </p>
+    <p>
+        The <span class="variable">\(\text{RiskSignal}(S_{t+1})\)</span> for Equation (8) in the Pac-Mind context is defined based on proximity to non-vulnerable ghosts in the state <span class="variable">\(S_{t+1}\)</span>. For instance, it could be a binary indicator if <span class="variable">\(S_{t+1}\)</span> contains a ghost within a certain radius, or a continuous value inversely proportional to the distance to the nearest ghost.
+    </p>
+
+    <h3>4.4 Experimental Conditions</h3>
+    <p>
+        To analyze the impact of neuromodulation, experiments are conducted under several distinct conditions, each characterized by specific settings of the neuromodulatory parameters:
+        <ul>
+            <li><strong>Baseline Condition:</strong> Standard RL agent behavior with moderate, balanced settings (e.g., <span class="variable">\(k_{DA} = 1.0\)</span>, <span class="variable">\(k_{5HT\_entropy} = 0.01\)</span>, <span class="variable">\(k_{5HT\_risk} = 0.1\)</span>). These values are chosen to promote stable learning and reasonable performance.</li>
+            <li><strong>High Dopamine (DA-Boost) Condition:</strong> Simulates a state of heightened reward sensitivity and motivation (e.g., <span class="variable">\(k_{DA} = 4.0\)</span>, with 5-HT parameters at baseline levels).</li>
+            <li><strong>High Serotonin (5-HT-Boost / Cautious) Condition:</strong> Simulates a state of increased caution, risk aversion, and possibly higher behavioral variability (e.g., <span class="variable">\(k_{DA} = 1.0\)</span>, <span class="variable">\(k_{5HT\_entropy} = 0.05\)</span>, <span class="variable">\(k_{5HT\_risk} = 1.0\)</span>).</li>
+            <li><strong>Combined States:</strong> Exploring interactions, such as High DA + High 5-HT, to observe how conflicting modulatory drives are resolved by the agent.</li>
+            <li><strong>Control Condition:</strong> An agent trained without any explicit neuromodulatory scaling (equivalent to <span class="variable">\(k_{DA} = 1.0\)</span>, <span class="variable">\(k_{5HT\_entropy} = 0\)</span>, <span class="variable">\(k_{5HT\_risk} = 0\)</span>, though a small baseline entropy bonus is common practice in RL).</li>
+        </ul>
+        Each condition is typically run for multiple independent training seeds to account for the stochasticity inherent in RL training and allow for statistical comparison of results.
+    </p>
     
 </body>
 </html>
