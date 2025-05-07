@@ -124,7 +124,7 @@
         The pursuit of artificial intelligence (AI) that emulates the sophisticated adaptability of biological organisms remains a central challenge. While contemporary reinforcement learning (RL) agents have achieved remarkable success in complex, well-defined tasks, they often exhibit behavioral rigidity when faced with dynamically changing environments or the need to balance conflicting internal goals (Sutton & Barto, 2018). Biological systems, in contrast, demonstrate an extraordinary capacity for fluid behavioral adjustments, a capability significantly shaped by neuromodulatory systems. These systems, through diffuse projection pathways, orchestrate global changes in brain state, profoundly influencing perception, learning, motivation, and action selection in response to both internal states and external contingencies (Dayan, 2012; Marder, 2012).
     </p>
     <p>
-        Among the array of neuromodulators, dopamine (DA) and serotonin (5-HT) play particularly pivotal roles in guiding learning and behavior. Phasic DA signals are robustly established as encoding reward prediction errors (RPEs)—the discrepancy between expected and received rewards—which serves as a crucial learning signal for reinforcing adaptive actions (Schultz et al., 1997). Beyond its role in learning, DA is also integral to motivated behavior, vigor, and the pursuit of goals. Serotonin, on the other hand, has a more multifaceted profile, implicated in the regulation of mood, patience, behavioral inhibition, and responses to aversive stimuli or uncertainty (Cools et al., 2011; Dayan & Huys, 2009). It is thought to play a key role in adjusting an organism's sensitivity to risk and in modulating the trade-off between immediate gratification and long-term outcomes.
+        Among the array of neuromodulators, dopamine (DA) and serotonin (5-HT) play pivotal roles in guiding learning and behavior. Phasic DA signals are robustly established as encoding reward prediction errors (RPEs)—the discrepancy between expected and received rewards—which serves as a crucial learning signal for reinforcing adaptive actions (Schultz et al., 1997). Beyond its role in learning, DA is also integral to motivated behavior, vigor, and the pursuit of goals. Serotonin, on the other hand, has a more multifaceted profile, implicated in the regulation of mood, patience, behavioral inhibition, and responses to aversive stimuli or uncertainty (Cools et al., 2011; Dayan & Huys, 2009). It is thought to play a key role in adjusting an organism's sensitivity to risk and in modulating the trade-off between immediate gratification and long-term outcomes.
     </p>
     <p>
         Inspired by these neurobiological functions, this paper addresses the research question: <em>How can computational analogs of dopamine and serotonin be integrated into reinforcement learning frameworks to endow agents with more biologically plausible and adaptive behavioral repertoires?</em> We propose a specific computational model where simulated DA and 5-HT levels dynamically influence core components of an actor-critic RL agent. We formalize DA's influence as a gain factor on the RPE signal, thereby directly modulating the efficacy of learning updates. Serotonin's influence is modeled by its impact on policy stochasticity (via an entropy term) and by adjusting the agent's sensitivity to potential risks or aversive outcomes within the environment.
@@ -133,8 +133,44 @@
         The primary contribution of this work is the development and analysis of this neuromodulated RL agent. We demonstrate, through simulations in a dynamic grid-world environment (referred to as "Pac-Mind"), how varying the levels of these simulated neuromodulators leads to qualitatively different and interpretable behavioral strategies—from highly explorative and reward-focused under high DA, to cautious and risk-averse under high 5-HT. This investigation aims to provide insights into how principles of neuromodulation can be harnessed to create AI systems capable of richer, more context-dependent decision-making, ultimately contributing to the development of more robust and intelligent artificial agents. Figure 1 (to be added) will provide a conceptual overview of the proposed neuromodulatory influences on the RL agent's learning loop.
     </p>
 
-</body>
-</html>
+    <h2>2. Theoretical Foundations</h2>
+    <p>
+        Our model builds upon established principles in reinforcement learning and the neurobiology of dopamine and serotonin. This section outlines these foundational concepts.
+    </p>
+
+    <h3>2.1 Reinforcement Learning Framework</h3>
+    <p>
+        We consider an agent interacting with an environment over discrete time steps, formalized as a Markov Decision Process (MDP). An MDP is defined by a tuple <span class="variable">\( (S, A, P, R, \gamma) \)</span>, where <span class="variable">\(S\)</span> is the set of states, <span class="variable">\(A\)</span> is the set of actions, <span class="variable">\(P(s'|s,a)\)</span> is the state transition probability function, <span class="variable">\(R(s,a,s')\)</span> is the reward function, and <span class="variable">\(\gamma \in [0,1]\)</span> is the discount factor. The agent's goal is to learn a policy, <span class="variable">\(\pi(a|s)\)</span>, which is a mapping from states to probabilities of selecting each action, that maximizes the expected cumulative discounted reward.
+    </p>
+    <p>
+        Value functions are central to many RL algorithms. The state-value function, <span class="variable">\(V^\pi(s)\)</span>, is the expected return starting from state <span class="variable">\(s\)</span> and following policy <span class="variable">\(\pi\)</span> thereafter. Similarly, the action-value function, <span class="variable">\(Q^\pi(s,a)\)</span>, is the expected return starting from state <span class="variable">\(s\)</span>, taking action <span class="variable">\(a\)</span>, and thereafter following policy <span class="variable">\(\pi\)</span>. These functions satisfy the Bellman equations, which provide a basis for iterative learning algorithms (Sutton & Barto, 2018).
+    </p>
+    <p>
+        Our work specifically employs an Actor-Critic architecture. In this paradigm, the "actor" learns the policy <span class="variable">\(\pi(a|s; \theta)\)</span>, parameterized by <span class="variable">\(\theta\)</span>, while the "critic" learns a value function, typically <span class="variable">\(V(s; w)\)</span> or <span class="variable">\(Q(s,a; w)\)</span>, parameterized by <span class="variable">\(w\)</span>. The critic provides an evaluative signal that guides the actor's learning. A key quantity in actor-critic methods is the Temporal Difference (TD) error, calculated at time step <span class="variable">\(t\)</span> as:
+    </p>
+    <div class="equation">
+        <span class="variable">\(\delta_t = R_{t+1} + \gamma V(S_{t+1}; w) - V(S_t; w)\)</span>
+        <span class="equation-label">(1)</span>
+    </div>
+    <p>
+        This TD error represents the discrepancy between the estimated value of the current state and a more informed estimate based on the received reward and the value of the next state. It serves as a crucial learning signal for updating both the actor and critic parameters.
+    </p>
+
+    <h3>2.2 Neurobiology of Dopamine and Reward Prediction Error</h3>
+    <p>
+        A cornerstone of modern reinforcement learning theory is its deep connection to the functioning of the brain's dopamine system. Seminal work by Schultz, Dayan, Montague, and colleagues (1997) demonstrated that the phasic firing of midbrain dopamine neurons does not simply signal reward itself, but rather encodes a reward prediction error (RPE). Specifically, these neurons exhibit a burst of activity when an unexpected reward occurs or when a reward is greater than anticipated (positive RPE). Conversely, they show a pause in firing if an expected reward is omitted or is smaller than anticipated (negative RPE). If a reward occurs exactly as predicted, there is no change in their baseline firing rate.
+    </p>
+    <p>
+        This dopaminergic RPE signal is thought to be a primary mechanism for driving associative learning in the brain, particularly in structures like the basal ganglia. A positive RPE (DA burst) strengthens the neural pathways and synaptic connections that led to the better-than-expected outcome, making those actions more likely in the future. A negative RPE (DA dip) weakens the connections associated with the worse-than-expected outcome, reducing the likelihood of those actions. The mathematical formulation of the TD error (<span class="variable">\(\delta_t\)</span> in Equation 1) closely mirrors this biological RPE signal, providing a powerful bridge between computational RL and neuroscience. Figure 2 (to be added) will illustrate the characteristic firing patterns of dopamine neurons in response to varying reward predictions and outcomes.
+    </p>
+
+    <h3>2.3 Neurobiology of Serotonin, Risk, and Behavioral Control</h3>
+    <p>
+        The serotonin (5-HT) system is considerably more heterogeneous in its functions compared to dopamine, with projections innervating almost all areas of the brain. While not as directly tied to a single computational quantity like RPE, 5-HT is broadly implicated in the regulation of mood, emotional states, and complex behavioral adaptations (Cools et al., 2011; Lucki, 1998). In the context of decision-making and learning, 5-HT is often associated with behavioral inhibition, particularly in response to punishment or anticipated negative outcomes (Soubrié, 1986). For instance, altered 5-HT levels have been linked to changes in impulsivity and the willingness to wait for delayed rewards (Schweighofer et al., 2008).
+    </p>
+    <p>
+        Furthermore, serotonin appears to play a crucial role in how organisms respond to uncertainty and risk. Studies suggest that 5-HT can modulate sensitivity to aversive events and influence the trade-off between exploration and exploitation (Dayan & Huys, 2009; Bari & Robbins, 2013). For example, increased serotonergic activity has been linked to increased harm avoidance and more cautious behavior in uncertain situations. This suggests that 5-HT may contribute to setting a general "tone" for how an agent approaches potentially hazardous or unpredictable elements of its environment, possibly by influencing the evaluation of negative future consequences or by promoting more varied (stochastic) behavioral patterns to avoid predictable negative outcomes. The precise computational formalisms for 5-HT's diverse roles are still an active area of research, but its influence on risk assessment and behavioral flexibility is a recurring theme.
+    </p>
 
 
     
