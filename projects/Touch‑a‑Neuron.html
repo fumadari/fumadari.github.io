@@ -173,6 +173,92 @@
     </p>
 
 
+
+
+    <h2>3. Computational Model: Neuromodulated Actor-Critic Agent</h2>
+    <p>
+        Building upon the theoretical foundations, we now detail the architecture and learning rules of our neuromodulated reinforcement learning agent. The model integrates dopaminergic and serotonergic influences directly into the update mechanisms of a standard Actor-Critic framework.
+    </p>
+
+    <h3>3.1 Baseline Actor-Critic Agent</h3>
+    <p>
+        The core of our agent is an Actor-Critic model. The actor component is responsible for selecting actions and is parameterized by <span class="variable">\(\theta\)</span>. It learns a policy <span class="variable">\(\pi(A_t|S_t; \theta)\)</span>, which defines a probability distribution over actions <span class="variable">\(A_t\)</span> given the current state <span class="variable">\(S_t\)</span>. The critic component, parameterized by <span class="variable">\(w\)</span>, learns a state-value function <span class="variable">\(V(S_t; w)\)</span>, which estimates the expected future discounted reward from state <span class="variable">\(S_t\)</span>.
+    </p>
+    <p>
+        At each time step <span class="variable">\(t\)</span>, the agent observes state <span class="variable">\(S_t\)</span>, selects an action <span class="variable">\(A_t \sim \pi(A_t|S_t; \theta)\)</span>, receives a reward <span class="variable">\(R_{t+1}\)</span>, and transitions to a new state <span class="variable">\(S_{t+1}\)</span>. The critic evaluates the TD error <span class="variable">\(\delta_t\)</span> as defined in Equation (1). This TD error is then used to update both the critic and actor parameters.
+    </p>
+    <p>
+        The critic's parameters <span class="variable">\(w\)</span> are updated to minimize the TD error, typically via stochastic gradient descent:
+    </p>
+    <div class="equation">
+        <span class="variable">\(w \leftarrow w + \alpha_c \cdot \delta_t \cdot \nabla_w V(S_t; w)\)</span>
+        <span class="equation-label">(2)</span>
+    </div>
+    <p>
+        where <span class="variable">\(\alpha_c\)</span> is the critic's learning rate. The actor's parameters <span class="variable">\(\theta\)</span> are updated to increase the probability of actions that lead to positive TD errors (or, more commonly, positive advantages <span class="variable">\(A_t = \delta_t\)</span> if a state-value critic is used). A common update rule is the policy gradient update:
+    </p>
+    <div class="equation">
+        <span class="variable">\(\theta \leftarrow \theta + \alpha_a \cdot \nabla_\theta \log \pi(A_t|S_t; \theta) \cdot \delta_t\)</span>
+        <span class="equation-label">(3)</span>
+    </div>
+    <p>
+        where <span class="variable">\(\alpha_a\)</span> is the actor's learning rate.
+    </p>
+
+    <h3>3.2 Dopaminergic Modulation (Parameter <span class="variable">\(k_{DA}\)</span>)</h3>
+    <p>
+        The influence of dopamine is modeled as a scaling factor, <span class="variable">\(k_{DA}\)</span>, applied to the TD error <span class="variable">\(\delta_t\)</span>. This reflects the biological role of dopamine in modulating the strength of the RPE signal and its consequent impact on learning. The <span class="variable">\(k_{DA}\)</span> parameter represents the current "dopaminergic gain" or responsiveness of the system to prediction errors. A higher <span class="variable">\(k_{DA}\)</span> signifies an amplified response to RPEs, leading to more substantial updates to both actor and critic, while a lower <span class="variable">\(k_{DA}\)</span> dampens this learning signal.
+    </p>
+    <p>
+        The modulated TD error, <span class="variable">\(\delta'_t\)</span>, is defined as:
+    </p>
+    <div class="equation">
+        <span class="variable">\(\delta'_t = k_{DA} \cdot \delta_t\)</span>
+        <span class="equation-label">(4)</span>
+    </div>
+    <p>
+        This <span class="variable">\(\delta'_t\)</span> then replaces <span class="variable">\(\delta_t\)</span> in the update rules for both the critic (Equation 2) and the actor (Equation 3):
+    </p>
+    <div class="equation">
+        <span class="variable">\(w \leftarrow w + \alpha_c \cdot \delta'_t \cdot \nabla_w V(S_t; w)\)</span>
+        <span class="equation-label">(5)</span>
+    </div>
+    <div class="equation">
+        <span class="variable">\(\theta \leftarrow \theta + \alpha_a \cdot \nabla_\theta \log \pi(A_t|S_t; \theta) \cdot \delta'_t\)</span>
+        <span class="equation-label">(6)</span>
+    </div>
+    <p>
+        For the purpose of this study, <span class="variable">\(k_{DA}\)</span> is treated as an external parameter that can be set to simulate different overall dopaminergic states (e.g., baseline, heightened, suppressed). Figure 3 (to be added) will depict how <span class="variable">\(k_{DA}\)</span> gates the flow of the RPE signal to the actor and critic update mechanisms.
+    </p>
+
+    <h3>3.3 Serotonergic Modulation (Parameters <span class="variable">\(k_{5HT\_entropy}\)</span> and <span class="variable">\(k_{5HT\_risk}\)</span>)</h3>
+    <p>
+        Serotonergic influence is modeled through two primary mechanisms reflecting its role in behavioral inhibition, risk sensitivity, and policy stochasticity.
+    </p>
+    <p>
+        First, we introduce a policy entropy regularization term, scaled by <span class="variable">\(k_{5HT\_entropy}\)</span>, into the actor's objective function. The entropy of the policy, <span class="variable">\(H(\pi(\cdot|S_t; \theta))\)</span>, measures its randomness or exploratory nature. Maximizing policy entropy encourages the agent to explore more diverse actions and avoid premature convergence to suboptimal deterministic policies. A higher <span class="variable">\(k_{5HT\_entropy}\)</span> value thus promotes more stochastic and potentially cautious behavior, as the agent is less committed to a single action. The actor's objective function <span class="variable">\(J(\theta)\)</span> is augmented as follows:
+    </p>
+    <div class="equation">
+        <span class="variable">\(J(\theta) \approx \mathbb{E}_{\pi} \left[ \sum_t \left( \log \pi(A_t|S_t; \theta) \cdot \delta'_t + k_{5HT\_entropy} \cdot H(\pi(\cdot|S_t; \theta)) \right) \right]\)</span>
+        <span class="equation-label">(7)</span>
+    </div>
+    <p>
+        This results in an additional term in the actor's gradient update (Equation 6), encouraging higher entropy when <span class="variable">\(k_{5HT\_entropy}\)</span> is positive.
+    </p>
+    <p>
+        Second, to model risk sensitivity associated with serotonin, we introduce a risk term directly into the agent's perceived reward or value calculation, scaled by <span class="variable">\(k_{5HT\_risk}\)</span>. This term, <span class="variable">\(\text{Risk}(S_t, A_t)\)</span>, quantifies the anticipated danger or aversiveness associated with taking action <span class="variable">\(A_t\)</span> in state <span class="variable">\(S_t\)</span>, or with the resulting state <span class="variable">\(S_{t+1}\)</span>. For example, in an environment with hazards, <span class="variable">\(\text{Risk}(S_t, A_t)\)</span> could be a learned prediction of entering a penalty state or proximity to an aversive stimulus. The agent's learning updates effectively use a risk-adjusted TD error, where the definition of reward or value is modified. A simple way to conceptualize this is by modifying the immediate reward signal experienced by the agent before it forms the TD error:
+    </p>
+    <div class="equation">
+        <span class="variable">\(R'_{t+1} = R_{t+1} - k_{5HT\_risk} \cdot \text{RiskSignal}(S_{t+1})\)</span>
+        <span class="equation-label">(8)</span>
+    </div>
+    <p>
+        where <span class="variable">\(\text{RiskSignal}(S_{t+1})\)</span> is a measure of the aversiveness of the resulting state. The TD error <span class="variable">\(\delta_t\)</span> (and subsequently <span class="variable">\(\delta'_t\)</span>) would then be calculated using <span class="variable">\(R'_{t+1}\)</span>. A higher <span class="variable">\(k_{5HT\_risk}\)</span> makes the agent more sensitive to these risk signals, effectively penalizing actions that lead to risky situations.
+    </p>
+    <p>
+        Similar to <span class="variable">\(k_{DA}\)</span>, the parameters <span class="variable">\(k_{5HT\_entropy}\)</span> and <span class="variable">\(k_{5HT\_risk}\)</span> are controlled externally in this study to simulate varying serotonergic states. The interplay between these modulatory parameters allows for a rich spectrum of behavioral responses.
+    </p>
+
     
 </body>
 </html>
