@@ -334,6 +334,52 @@
         </ul>
         Each condition is typically run for multiple independent training seeds to account for the stochasticity inherent in RL training and allow for statistical comparison of results.
     </p>
-    
+
+
+
+<h2>5. Metrics and Evaluation</h2>
+    <p>
+        To comprehensively assess the impact of dopaminergic and serotonergic modulation on agent behavior and learning, we employ a suite of quantitative and qualitative metrics. These metrics are designed to capture not only overall task performance but also subtle shifts in strategy, risk preference, and exploration patterns.
+    </p>
+
+    <h3>5.1 Performance Metrics</h3>
+    <p>
+        These metrics evaluate the agent's effectiveness in achieving the primary objectives of the Pac-Mind task:
+        <ul>
+            <li><strong>Cumulative Score per Episode:</strong> The total reward accumulated by the agent in a single episode. Averaged over multiple episodes and training seeds, this is a primary indicator of overall task proficiency. Learning curves plotting average cumulative score against training episodes or steps will be crucial (see Figure 6a, to be added).</li>
+            <li><strong>Episode Length / Survival Time:</strong> The number of time steps an agent survives before an episode terminates (e.g., due to collision with a ghost or task completion). Longer survival times, when coupled with high scores, indicate efficient and safe navigation.</li>
+            <li><strong>Pellets Collected:</strong> The total number of regular pellets consumed per episode. This measures the agent's ability to systematically explore and exploit common reward sources.</li>
+            <li><strong>Power Pellets Utilized:</strong> The number of power pellets collected. This indicates the agent's willingness to seek high-value, potentially strategic items.</li>
+            <li><strong>Ghosts Eaten (during vulnerability):</strong> The number of ghosts consumed by the agent while they are vulnerable after a power pellet. This reflects opportunistic and potentially aggressive reward-seeking behavior.</li>
+            <li><strong>Ghost Collisions (Non-vulnerable):</strong> The number of times the agent collides with a non-vulnerable ghost, resulting in a penalty. This is a direct measure of risk-taking failure or poor hazard avoidance.</li>
+        </ul>
+    </p>
+
+    <h3>5.2 Behavioral Metrics</h3>
+    <p>
+        These metrics aim to characterize the agent's decision-making style and how it navigates the environment:
+        <ul>
+            <li><strong>Path Trajectory Analysis:</strong> Qualitative visualization of representative agent paths through the maze under different neuromodulatory conditions (see Figure 7, to be added). This can reveal patterns such as directness to goals, avoidance maneuvers, or hesitant movements.</li>
+            <li><strong>State Visitation Frequency Heatmaps:</strong> Visualizations showing the frequency with which the agent visits different cells in the grid. These heatmaps can highlight preferred routes, areas of high exploration, or regions systematically avoided (see Figure 6b, to be added).</li>
+            <li><strong>Policy Entropy (<span class="variable">\(H(\pi(\cdot|S_t; \theta))\)</span>):</strong> The average entropy of the agent's policy across states visited during an episode. Higher average entropy suggests more stochastic action selection and greater exploration, while lower entropy indicates more deterministic, exploitative behavior. This directly reflects the influence of the <span class="variable">\(k_{5HT\_entropy}\)</span> parameter.</li>
+            <li><strong>Average Distance to Nearest Ghost:</strong> Calculated over time, this metric indicates the agent's typical proximity to threats. A consistently larger distance suggests more cautious, risk-averse behavior, correlating with <span class="variable">\(k_{5HT\_risk}\)</span>.</li>
+            <li><strong>Action Selection Frequencies:</strong> Analysis of the distribution of chosen actions (Up, Down, Left, Right) in various contexts (e.g., near pellets, near ghosts) can reveal biases in movement patterns.</li>
+            <li><strong>Decision Latency (if applicable in a more complex model):</strong> While not directly modeled here, in scenarios with explicit planning steps, the time taken to select an action could be a behavioral marker.</li>
+        </ul>
+    </p>
+
+    <h3>5.3 Learning Process Metrics</h3>
+    <p>
+        These metrics provide insight into how neuromodulation affects the underlying learning dynamics of the agent:
+        <ul>
+            <li><strong>TD-Error (<span class="variable">\(\delta_t\)</span> and <span class="variable">\(\delta'_t\)</span>) Dynamics:</strong> Plotting the distribution, magnitude, and variance of TD errors over the course of training. The effect of <span class="variable">\(k_{DA}\)</span> on scaling <span class="variable">\(\delta'_t\)</span> should be observable. Large, frequent TD errors might indicate an unstable learning process or a highly volatile environment perception.</li>
+            <li><strong>Value Function (<span class="variable">\(V(S_t; w)\)</span>) Evolution:</strong> Visualizing the learned state-value function as a heatmap across the maze at different stages of training and under different neuromodulatory conditions. This can show how the agent's assessment of state desirability changes (see Figure 6c, to be added). For instance, states near ghosts might have significantly lower values under high <span class="variable">\(k_{5HT\_risk}\)</span>.</li>
+            <li><strong>Convergence Speed:</strong> The rate at which performance metrics (e.g., average score) asymptote during training. Different neuromodulatory settings might affect how quickly the agent reaches its peak performance or a stable policy.</li>
+            <li><strong>Weight Norms of Actor/Critic Networks:</strong> Monitoring the magnitude of network weights can sometimes provide an indirect measure of learning stability or the complexity of the learned function.</li>
+        </ul>
+    </p>
+    <p>
+        By systematically collecting and analyzing these metrics across the experimental conditions outlined in Section 4.4, we aim to build a comprehensive understanding of how simulated dopamine and serotonin influence the agent's learning process, its emergent behavioral strategies, and its ultimate success in the Pac-Mind environment. Statistical significance tests will be applied where appropriate to compare outcomes across different conditions.
+    </p>
 </body>
 </html>
