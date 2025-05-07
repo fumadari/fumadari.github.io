@@ -119,7 +119,19 @@
         <strong>Keywords:</strong> Reinforcement Learning, Neuromodulation, Dopamine, Serotonin, Biologically Inspired AI, Actor-Critic, Computational Neuroscience, Adaptive Behavior, Risk Sensitivity.
     </p>
 
-    <!-- The rest of the document will follow -->
+<h2>1. Introduction</h2>
+    <p>
+        The pursuit of artificial intelligence (AI) that emulates the sophisticated adaptability of biological organisms remains a central challenge. While contemporary reinforcement learning (RL) agents have achieved remarkable success in complex, well-defined tasks, they often exhibit behavioral rigidity when faced with dynamically changing environments or the need to balance conflicting internal goals (Sutton & Barto, 2018). Biological systems, in contrast, demonstrate an extraordinary capacity for fluid behavioral adjustments, a capability significantly shaped by neuromodulatory systems. These systems, through diffuse projection pathways, orchestrate global changes in brain state, profoundly influencing perception, learning, motivation, and action selection in response to both internal states and external contingencies (Dayan, 2012; Marder, 2012).
+    </p>
+    <p>
+        Among the array of neuromodulators, dopamine (DA) and serotonin (5-HT) play particularly pivotal roles in guiding learning and behavior. Phasic DA signals are robustly established as encoding reward prediction errors (RPEs)—the discrepancy between expected and received rewards—which serves as a crucial learning signal for reinforcing adaptive actions (Schultz et al., 1997). Beyond its role in learning, DA is also integral to motivated behavior, vigor, and the pursuit of goals. Serotonin, on the other hand, has a more multifaceted profile, implicated in the regulation of mood, patience, behavioral inhibition, and responses to aversive stimuli or uncertainty (Cools et al., 2011; Dayan & Huys, 2009). It is thought to play a key role in adjusting an organism's sensitivity to risk and in modulating the trade-off between immediate gratification and long-term outcomes.
+    </p>
+    <p>
+        Inspired by these neurobiological functions, this paper addresses the research question: <em>How can computational analogs of dopamine and serotonin be integrated into reinforcement learning frameworks to endow agents with more biologically plausible and adaptive behavioral repertoires?</em> We propose a specific computational model where simulated DA and 5-HT levels dynamically influence core components of an actor-critic RL agent. We formalize DA's influence as a gain factor on the RPE signal, thereby directly modulating the efficacy of learning updates. Serotonin's influence is modeled by its impact on policy stochasticity (via an entropy term) and by adjusting the agent's sensitivity to potential risks or aversive outcomes within the environment.
+    </p>
+    <p>
+        The primary contribution of this work is the development and analysis of this neuromodulated RL agent. We demonstrate, through simulations in a dynamic grid-world environment (referred to as "Pac-Mind"), how varying the levels of these simulated neuromodulators leads to qualitatively different and interpretable behavioral strategies—from highly explorative and reward-focused under high DA, to cautious and risk-averse under high 5-HT. This investigation aims to provide insights into how principles of neuromodulation can be harnessed to create AI systems capable of richer, more context-dependent decision-making, ultimately contributing to the development of more robust and intelligent artificial agents. Figure 1 (to be added) will provide a conceptual overview of the proposed neuromodulatory influences on the RL agent's learning loop.
+    </p>
 
 </body>
 </html>
