@@ -381,5 +381,83 @@
     <p>
         By systematically collecting and analyzing these metrics across the experimental conditions outlined in Section 4.4, we aim to build a comprehensive understanding of how simulated dopamine and serotonin influence the agent's learning process, its emergent behavioral strategies, and its ultimate success in the Pac-Mind environment. Statistical significance tests will be applied where appropriate to compare outcomes across different conditions.
     </p>
+
+
+        <h2>6. Expected Results and Analysis</h2>
+    <p>
+        Based on the established neurobiological roles of dopamine and serotonin and their proposed computational implementations, we anticipate distinct and measurable effects on agent behavior and learning across the different experimental conditions. This section outlines these expected outcomes and the planned analysis.
+    </p>
+
+    <h3>6.1 Baseline Condition</h3>
+    <p>
+        In the Baseline Condition (moderate <span class="variable">\(k_{DA}\)</span>, low-to-moderate <span class="variable">\(k_{5HT\_entropy}\)</span> and <span class="variable">\(k_{5HT\_risk}\)</span>), the agent is expected to learn a balanced strategy. It should effectively collect pellets, occasionally utilize power pellets, and demonstrate reasonable avoidance of non-vulnerable ghosts. Performance metrics, such as cumulative score, should show steady improvement over training episodes, eventually reaching a stable plateau (as depicted in a hypothetical Figure 6a). The learned value function (Figure 6c) should reflect higher values for states with pellets and lower values for states near immediate threats. Policy entropy will likely stabilize at a moderate level, indicating a balance between exploration and exploitation.
+    </p>
+
+    <h3>6.2 High Dopamine (DA-Boost) Condition</h3>
+    <p>
+        With an elevated <span class="variable">\(k_{DA}\)</span>, the RPE signal <span class="variable">\(\delta'_t\)</span> is amplified.
+        <ul>
+            <li><strong>Learning Dynamics:</strong> We expect faster initial learning, particularly from positive rewards. The agent might more rapidly associate actions with high-reward outcomes due to the magnified positive RPEs. However, amplified negative RPEs could also lead to more volatile value estimates or overly strong avoidance of even minor negative experiences if not balanced.
+            </li>
+            <li><strong>Behavioral Phenotype:</strong> The agent is predicted to exhibit more "reward-driven" or "impulsive" behavior. This may manifest as:
+                <ul>
+                    <li>More direct and rapid pursuit of pellets and especially power pellets (Figure 7a, to be added, showing more linear paths to rewards).</li>
+                    <li>Increased willingness to take risks to obtain high-value rewards, potentially leading to more frequent ghost collisions despite faster learning. This trade-off will be critical to analyze via performance metrics.</li>
+                    <li>A potential decrease in policy entropy if the agent quickly locks onto perceived optimal paths to rewards.</li>
+                </ul>
+            </li>
+            <li><strong>Performance:</strong> The cumulative score might initially rise faster than baseline but could be capped or even reduced by increased penalties from risky behavior. The variance in scores across episodes might also be higher.
+            </li>
+        </ul>
+    </p>
+
+    <h3>6.3 High Serotonin (5-HT-Boost / Cautious) Condition</h3>
+    <p>
+        Elevated <span class="variable">\(k_{5HT\_entropy}\)</span> and <span class="variable">\(k_{5HT\_risk}\)</span> are expected to induce cautious, risk-averse behavior.
+        <ul>
+            <li><strong>Learning Dynamics:</strong> The <span class="variable">\(k_{5HT\_risk}\)</span> term, by effectively increasing the penalty for approaching hazards (Equation 8), should lead to a value function where states near ghosts are strongly devalued (Figure 6c, showing larger "valleys" around ghosts). The <span class="variable">\(k_{5HT\_entropy}\)</span> term will encourage more stochastic action selection.
+            </li>
+            <li><strong>Behavioral Phenotype:</strong> The agent is predicted to be more "cautious" or "anxious." This may manifest as:
+                <ul>
+                    <li>Slower, more meandering paths (Figure 7b, to be added), as the agent prioritizes safety and exploration over rapid reward acquisition.</li>
+                    <li>Significantly increased average distance maintained from ghosts.</li>
+                    <li>Reduced collection of pellets in high-risk areas, and potentially lower utilization of power pellets if they are situated near threats.</li>
+                    <li>Higher average policy entropy.</li>
+                </ul>
+            </li>
+            <li><strong>Performance:</strong> Cumulative scores are likely to be lower than baseline, particularly if caution prevents access to significant reward sources. However, the number of ghost collisions should be substantially reduced, leading to potentially longer episode survival times.
+            </li>
+        </ul>
+    </p>
+
+    <h3>6.4 Combined States and Interactions</h3>
+    <p>
+        Investigating conditions with combined high DA and high 5-HT will be particularly insightful. For instance, high <span class="variable">\(k_{DA}\)</span> alongside high <span class="variable">\(k_{5HT\_risk}\)</span> could create an internal conflict: a strong drive for reward coupled with a strong aversion to risk. This might lead to:
+        <ul>
+            <li>Hesitant or "dithering" behavior near rewards that are also close to threats.</li>
+            <li>Highly specific strategies that attempt to secure rewards only when perceived risk is minimal.</li>
+            <li>Potentially inefficient exploration as the agent oscillates between approach and avoidance.</li>
+        </ul>
+        The interaction between <span class="variable">\(k_{DA}\)</span>'s effect on learning speed/vigor and <span class="variable">\(k_{5HT\_entropy}\)</span>'s effect on policy stochasticity will also be examined.
+    </p>
+
+    <h3>6.5 Expected Metric Readouts Summary</h3>
+    <p>
+        The anticipated qualitative effects on key metrics across primary conditions are summarized in Table 1 (to be generated based on the text below if a table is desired, or kept as prose).
+    </p>
+    <p>
+        In the <strong>DA-Boost</strong> condition, we expect to see higher pellet and power pellet collection rates, but also an increase in ghost collisions compared to baseline. Policy entropy might decrease as the agent focuses on direct reward paths. The TD-error magnitudes will be larger.
+    </p>
+    <p>
+        In the <strong>5-HT-Boost</strong> condition, ghost collisions are expected to be minimal. Pellet collection might be slower, and average distance to ghosts significantly higher. Policy entropy should be elevated. The learned value function will show pronounced negative values around ghost-occupied regions.
+    </p>
+    <p>
+        Analysis will involve plotting learning curves for performance metrics, visualizing behavioral patterns (paths, heatmaps), and comparing statistical distributions of behavioral and learning process metrics across conditions. For instance, box plots comparing cumulative scores, episode lengths, and ghost collisions across the different neuromodulatory states (as might be shown in a Figure 8, to be added) will be used to highlight significant differences. The correlation between the set neuromodulatory parameters and the observed metrics will be central to validating the model's intended functionality.
+    </p>
+
+
+
+
+    
 </body>
 </html>
