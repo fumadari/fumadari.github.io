@@ -57,7 +57,8 @@ Elastic State Models (ESM) add adaptive computation to a streaming state-space b
 #### [Broadcast-Gain: Minimal Control Plane for Cooperative MARL](./projects/broadcast-gain.html)
 Broadcast-Gain (BG) is a fixed-rate, neighbor-only overlay that reduces long-tail latency in cooperative multi-agent reinforcement learning under lossy communication. Each agent broadcasts just two bytes per cycle—a signed residual and a meta tag—without modifying the base learner. Receivers form a confidence-weighted consensus to gate a phase scheduler and apply a clipped, distance-decayed push to the MOVE logit near junctions. At ~0.24 kbit/s per agent, BG reduces tail wait by ~5 steps and increases near-gate flow by +392 per 1k steps on hard evaluation cells.
 
-
+#### [Mood Swings: Neuromodulatory Control for Deep RL Agents](./projects/mood-swings.html)
+A standard actor-critic agent can shift between impulsive reward harvesting and cautious hazard avoidance using just three global scalars: a dopaminergic gain that multiplies the TD error, and two serotonergic coefficients for entropy drive and threat discounting. These parameters define a continuous "computational mood" manifold outside the network, enabling policy switching by writing three floats. Experiments in Pac-Mind and MiniHack show smooth safety-performance frontiers, with high dopamine accelerating learning but raising collision risk, and high serotonin prolonging survival while tempering returns.
 
 ### Contact
 

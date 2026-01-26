@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mood Swings: Three Neuromodulatory Scalars for Impulse–Caution Control in Actor–Critic Agents</title>
+
+  <style>
+    body{
+      font-family: system-ui, -apple-system, sans-serif;
+      line-height: 1.65;
+      max-width: 1020px;
+      margin: 0 auto;
+      padding: 26px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3{
+      color: #1f2937;
+      margin-top: 1.4em;
+      line-height: 1.25;
+    }
+    p{ margin: 0.9em 0; }
+    a{ color: #1d4ed8; }
+    code{
+      background: #f3f4f6;
+      padding: 0.15em 0.35em;
+      border-radius: 4px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.95em;
+    }
+    pre{
+      background: #f3f4f6;
+      padding: 1em;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 1em 0;
+    }
+    .abstract{
+      margin: 1.6em 0;
+      padding: 1.1em 1.2em;
+      background: #f8f9fa;
+      border-left: 4px solid #1f2937;
+    }
+    .meta{
+      margin-top: 0.7em;
+      color: #4b5563;
+      font-size: 0.95em;
+    }
+    .badge{
+      display: inline-block;
+      font-size: 12px;
+      color: #374151;
+      background: #eef2ff;
+      border: 1px solid #e5e7eb;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin: 0 6px 6px 0;
+    }
+    .panel{
+      background: #f8f9fa;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin: 1.1em 0;
+    }
+    .equation{ margin: 1em 0; text-align: center; }
+    figure{ margin: 1.4em 0; padding: 0; }
+    figcaption{ margin-top: 0.65em; font-style: italic; color: #6b7280; }
+    table{
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1em 0;
+      font-size: 0.98em;
+    }
+    th, td{
+      border: 1px solid #e5e7eb;
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th{ background: #f8f9fa; }
+    .svg-wrap{
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 10px;
+      background: #ffffff;
+      overflow-x: auto;
+    }
+    .small{
+      color: #6b7280;
+      font-size: 12px;
+      margin-top: 1.4em;
+    }
+    .hr{
+      height: 1px;
+      background: #e5e7eb;
+      margin: 1.4em 0;
+      border: 0;
+    }
+    .muted{ color: #6b7280; }
+  </style>
+
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      }
+    };
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+  <h1>Mood Swings: Three Neuromodulatory Scalars for Impulse–Caution Control in Actor–Critic Agents</h1>
+
+  <div class="abstract">
+    <p>
+      <strong>Abstract.</strong>
+      Neuromodulators in biological brains act as low-bandwidth broadcast signals that reshape learning and behavior.
+      This project tests a minimal analogue for deep reinforcement learning: three global scalars applied to a standard actor–critic update.
+      A dopaminergic gain $k_{\mathrm{DA}}$ scales the temporal-difference (TD) error.
+      Two serotonergic coefficients act on orthogonal channels: an entropy weight $k^{\mathrm{ent}}_{\mathrm{5HT}}$ and a risk-shaping weight
+      $k^{\mathrm{risk}}_{\mathrm{5HT}}$ that subtracts a differentiable danger potential from reward.
+      The parameters $\mathbf{k}=(k_{\mathrm{DA}}, k^{\mathrm{ent}}_{\mathrm{5HT}}, k^{\mathrm{risk}}_{\mathrm{5HT}})$ define a compact control surface for trading reward against hazard exposure.
+      In Pac-Mind and MiniHack HazardRooms, sweeping $\mathbf{k}$ yields a smooth safety–performance frontier:
+      higher $k_{\mathrm{DA}}$ accelerates learning but raises collision rates, while higher serotonergic weights increase survival at the cost of slower reward accumulation.
+    </p>
+    <div class="meta">
+      <span class="badge">deep RL</span>
+      <span class="badge">actor–critic</span>
+      <span class="badge">entropy regularization</span>
+      <span class="badge">risk shaping</span>
+      <span class="badge">neuromodulation</span>
+    </div>
+  </div>
+
+  <h2>1. Scope and claims</h2>
+  <p>
+    This work is deliberately small in mechanism.
+    The policy and value networks are conventional.
+    The only additional degrees of freedom are three scalars that gate existing learning signals.
+    The empirical claim is narrow: across two hazard-heavy grid domains, these scalars parameterize a family of agents with distinct impulse–caution profiles.
+  </p>
+  <p>
+    A practical interpretation is online adaptation under continued learning.
+    If learning is turned off, scaling the TD error has no effect, since it only multiplies gradients.
+    The runtime control knob is therefore meaningful when the agent is still updating parameters, or when the system maintains multiple checkpoints trained at different $\mathbf{k}$ values.
+  </p>
+
+  <h2>2. Preliminaries</h2>
+  <p>
+    We use a Markov decision process $\mathcal{M}=(\mathcal{S},\mathcal{A},P,r,\gamma)$.
+    At time $t$, the agent observes $S_t$, samples $A_t\sim\pi_\theta(\cdot\mid S_t)$, receives reward
+    $R_{t+1}=r(S_t,A_t,S_{t+1})$, and transitions to $S_{t+1}\sim P(\cdot\mid S_t,A_t)$.
+    The discounted return is $G_t=\sum_{k\ge 0}\gamma^k R_{t+k+1}$.
+  </p>
+  <p>
+    The actor–critic baseline uses a value function $V_w$ and TD error
+    $$\delta_t = R_{t+1} + \gamma V_w(S_{t+1}) - V_w(S_t).$$
+    The critic minimizes $\tfrac12\delta_t^2$ and the actor ascends the policy-gradient surrogate $\log\pi_\theta(A_t\mid S_t)\,\delta_t$.
+  </p>
+
+  <h2>3. Neuromodulatory actor–critic</h2>
+
+  <h3>3.1 Three scalars</h3>
+  <p>
+    Neuromodulation is introduced by replacing the baseline learning signal with three scalar gates:
+  </p>
+
+  <div class="equation">
+    $$\mathbf{k} = (k_{\mathrm{DA}},\; k^{\mathrm{ent}}_{\mathrm{5HT}},\; k^{\mathrm{risk}}_{\mathrm{5HT}}).$$
+  </div>
+
+  <p>
+    The three components have distinct roles.
+    Risk shaping modifies the reward used in the TD error.
+    Dopamine gain scales the TD error after reward shaping.
+    Entropy drive adds an explicit entropy gradient term to the actor update.
+  </p>
+
+  <h3>3.2 Risk shaping</h3>
+  <p>
+    Let $\rho(s)$ be a differentiable danger potential.
+    In grid tasks this can be a smooth function of distance to hazards, spikes, lava, or enemies.
+    The shaped reward is
+  </p>
+
+  <div class="equation">
+    $$R'_{t+1} = R_{t+1} - k^{\mathrm{risk}}_{\mathrm{5HT}}\,\rho(S_{t+1}).$$
+  </div>
+
+  <p>
+    The TD error becomes
+    $$\delta_t = R'_{t+1} + \gamma V_w(S_{t+1}) - V_w(S_t).$$
+    This creates value depressions around hazards, which encourages the actor to route trajectories around dangerous regions.
+  </p>
+
+  <h3>3.3 Dopaminergic gain</h3>
+  <p>
+    The dopamine gain scales the TD error used in both the actor and critic updates:
+  </p>
+
+  <div class="equation">
+    $$\delta'_t = k_{\mathrm{DA}}\,\delta_t.$$
+  </div>
+
+  <p>
+    In an on-policy actor–critic, scaling $\delta_t$ changes the effective step size of both updates.
+    Larger $k_{\mathrm{DA}}$ can accelerate learning early, but also amplifies gradient noise and can increase instability.
+  </p>
+
+  <h3>3.4 Serotonergic entropy drive</h3>
+  <p>
+    The actor update includes an entropy term with coefficient $k^{\mathrm{ent}}_{\mathrm{5HT}}$.
+    Let $H_t=-\sum_a \pi_\theta(a\mid S_t)\log\pi_\theta(a\mid S_t)$.
+    The parameter update is
+  </p>
+
+  <div class="equation">
+    $$\theta \leftarrow \theta + \alpha_a\left(\delta'_t\,\nabla_\theta\log\pi_\theta(A_t\mid S_t) + k^{\mathrm{ent}}_{\mathrm{5HT}}\,\nabla_\theta H_t\right).$$
+  </div>
+
+  <p>
+    Increasing $k^{\mathrm{ent}}_{\mathrm{5HT}}$ broadens the action distribution and increases exploration.
+    This typically increases survival under hazards, but slows exploitation.
+  </p>
+
+  <h3>3.5 Compact update procedure</h3>
+  <pre><code>Inputs: (S_t, A_t, R_{t+1}, S_{t+1}), danger potential ρ(·), scalars k
+1) R' = R_{t+1} - k_5HT^risk * ρ(S_{t+1})
+2) δ  = R' + γ V_w(S_{t+1}) - V_w(S_t)
+3) δ' = k_DA * δ
+4) Critic:  w ← w + α_c δ' ∇_w V_w(S_t)
+5) Entropy: H_t = -Σ_a π_θ(a|S_t) log π_θ(a|S_t)
+6) Actor:   θ ← θ + α_a [ δ' ∇_θ log π_θ(A_t|S_t) + k_5HT^ent ∇_θ H_t ]</code></pre>
+
+  <figure>
+    <div class="svg-wrap">
+      <svg viewBox="0 0 980 280" width="100%" height="280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Neuromodulatory update diagram">
+        <rect x="0" y="0" width="980" height="280" fill="#ffffff"/>
+
+        <g font-family="system-ui, -apple-system, sans-serif">
+          <rect x="40" y="55" width="200" height="70" rx="12" fill="#ffffff" stroke="#d1d5db" stroke-width="2"/>
+          <text x="140" y="85" text-anchor="middle" font-size="13" fill="#111827">transition</text>
+          <text x="140" y="106" text-anchor="middle" font-size="12" fill="#6b7280">(S_t, A_t, R, S_{t+1})</text>
+
+          <rect x="280" y="40" width="220" height="100" rx="12" fill="#fff7ed" stroke="#fdba74" stroke-width="2"/>
+          <text x="390" y="70" text-anchor="middle" font-size="13" fill="#111827">risk shaping</text>
+          <text x="390" y="92" text-anchor="middle" font-size="12" fill="#6b7280">R' = R - k_5HT^risk ρ(S')</text>
+          <text x="390" y="114" text-anchor="middle" font-size="12" fill="#6b7280">sets hazard penalties</text>
+
+          <rect x="540" y="40" width="200" height="100" rx="12" fill="#eef2ff" stroke="#90caf9" stroke-width="2"/>
+          <text x="640" y="70" text-anchor="middle" font-size="13" fill="#111827">TD error</text>
+          <text x="640" y="92" text-anchor="middle" font-size="12" fill="#6b7280">δ = R' + γV(S') - V(S)</text>
+          <text x="640" y="114" text-anchor="middle" font-size="12" fill="#6b7280">δ' = k_DA δ</text>
+
+          <rect x="780" y="40" width="170" height="100" rx="12" fill="#ffffff" stroke="#d1d5db" stroke-width="2"/>
+          <text x="865" y="70" text-anchor="middle" font-size="13" fill="#111827">updates</text>
+          <text x="865" y="92" text-anchor="middle" font-size="12" fill="#6b7280">critic uses δ'</text>
+          <text x="865" y="114" text-anchor="middle" font-size="12" fill="#6b7280">actor uses δ'</text>
+
+          <rect x="540" y="165" width="410" height="80" rx="12" fill="#f8f9fa" stroke="#e5e7eb"/>
+          <text x="745" y="194" text-anchor="middle" font-size="13" fill="#111827">entropy drive</text>
+          <text x="745" y="216" text-anchor="middle" font-size="12" fill="#6b7280">add k_5HT^ent ∇_θ H(π(·|S_t))</text>
+
+          <g stroke="#6b7280" stroke-width="2" fill="none">
+            <path d="M240,90 L280,90"/>
+            <path d="M500,90 L540,90"/>
+            <path d="M740,90 L780,90"/>
+            <path d="M640,140 L640,165"/>
+            <path d="M865,140 L865,165"/>
+          </g>
+
+          <text x="490" y="265" text-anchor="middle" font-size="11" fill="#6b7280">
+            Figure 1. Three scalars gate reward shaping, TD scaling, and entropy regularization in an otherwise standard actor–critic update.
+          </text>
+        </g>
+      </svg>
+    </div>
+    <figcaption>
+      Figure 1. Neuromodulatory control acts only on learning signals. The policy and value networks remain conventional.
+    </figcaption>
+  </figure>
+
+  <h2>4. Domains</h2>
+
+  <h3>4.1 Pac-Mind</h3>
+  <p>
+    Pac-Mind is a 20×20 toroidal maze.
+    Cells contain walls, pellets (+1), power pellets (+10 and 40 steps of vulnerability), an agent, and four ghosts.
+    Capturing a vulnerable ghost yields +50.
+    Contact with a non-vulnerable ghost ends the episode with −100.
+    Ghosts pursue the agent with probability 0.8 and otherwise move randomly.
+    Episodes terminate on collision, after 3000 steps, or when all pellets are collected.
+  </p>
+
+  <h3>4.2 MiniHack HazardRooms</h3>
+  <p>
+    HazardRooms are 17×17 ASCII layouts with lava (instant death, −100), floor spikes (−10), and an amulet goal (+100).
+    Each episode samples one of eight room templates, which forces the agent to recompute a safe path.
+    Observations are egocentric tensors that are down-projected to the same 6-channel format used in Pac-Mind so the network is unchanged across tasks.
+  </p>
+
+  <h2>5. Network and training</h2>
+
+  <h3>5.1 Perception and policy</h3>
+  <p>
+    At each step the agent receives an 11×11×6 egocentric view centered on its position.
+    Two 3×3 convolutional layers (strides 1, 32 then 64 filters, ReLU) produce a 256-dimensional embedding.
+    A linear value head outputs $V_w(S_t)$ and a linear policy head outputs a distribution over four cardinal actions.
+  </p>
+
+  <h3>5.2 Shared hyperparameters</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Parameter</th>
+        <th>Symbol</th>
+        <th>Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>discount factor</td>
+        <td>$\gamma$</td>
+        <td>0.99</td>
+      </tr>
+      <tr>
+        <td>actor learning rate</td>
+        <td>$\alpha_a$</td>
+        <td>$10^{-4}$</td>
+      </tr>
+      <tr>
+        <td>critic learning rate</td>
+        <td>$\alpha_c$</td>
+        <td>$10^{-4}$</td>
+      </tr>
+      <tr>
+        <td>rollout length</td>
+        <td>$n$</td>
+        <td>20</td>
+      </tr>
+      <tr>
+        <td>parallel environments</td>
+        <td>-</td>
+        <td>16</td>
+      </tr>
+      <tr>
+        <td>gradient clip</td>
+        <td>-</td>
+        <td>1.0</td>
+      </tr>
+      <tr>
+        <td>episode cap</td>
+        <td>$T_{\max}$</td>
+        <td>3000</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>5.3 Mood sweep</h3>
+  <p>
+    The sweep spans 36 settings:
+    $k_{\mathrm{DA}}\in\{0.5,1,2,4\}$,
+    $k^{\mathrm{ent}}_{\mathrm{5HT}}\in\{0,0.02,0.05\}$,
+    and $k^{\mathrm{risk}}_{\mathrm{5HT}}\in\{0,0.2,1\}$.
+    Each $\mathbf{k}$ setting is trained from scratch for 50,000 episodes under five random seeds.
+    Every tenth episode runs in evaluation mode with greedy action selection and no learning.
+  </p>
+
+  <h2>6. Results</h2>
+
+  <h3>6.1 Learning dynamics in Pac-Mind</h3>
+  <p>
+    Higher dopaminergic gain accelerates early learning and increases return variance.
+    The baseline setting $(1,0,0)$ approaches a plateau around 134.
+    A high-dopamine setting $k_{\mathrm{DA}}=4$ reaches a higher plateau around 155 and overtakes the baseline near episode 11,800.
+    A serotonin-dominant setting $(1,0.05,1)$ learns more slowly and converges to a lower but more stable plateau around 124.
+  </p>
+
+  <figure>
+    <div class="svg-wrap">
+      <svg viewBox="0 0 980 320" width="100%" height="320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Schematic learning curves">
+        <rect x="0" y="0" width="980" height="320" fill="#ffffff"/>
+
+        <g font-family="system-ui, -apple-system, sans-serif">
+          <text x="490" y="26" text-anchor="middle" font-size="13" fill="#111827">Learning dynamics in Pac-Mind (schematic)</text>
+
+          <!-- axes -->
+          <line x1="90" y1="270" x2="920" y2="270" stroke="#9ca3af" stroke-width="2"/>
+          <line x1="90" y1="60"  x2="90"  y2="270" stroke="#9ca3af" stroke-width="2"/>
+          <text x="505" y="305" text-anchor="middle" font-size="12" fill="#6b7280">training episodes</text>
+          <text x="30" y="165" transform="rotate(-90 30 165)" text-anchor="middle" font-size="12" fill="#6b7280">average return</text>
+
+          <!-- plateau lines -->
+          <line x1="90" y1="150" x2="920" y2="150" stroke="#e5e7eb" stroke-dasharray="6,6"/>
+          <line x1="90" y1="125" x2="920" y2="125" stroke="#e5e7eb" stroke-dasharray="6,6"/>
+          <line x1="90" y1="170" x2="920" y2="170" stroke="#e5e7eb" stroke-dasharray="6,6"/>
+          <text x="925" y="154" font-size="10" fill="#6b7280">~134</text>
+          <text x="925" y="129" font-size="10" fill="#6b7280">~155</text>
+          <text x="925" y="174" font-size="10" fill="#6b7280">~124</text>
+
+          <!-- curves -->
+          <path d="M90,255 C160,250 210,235 260,220 C330,200 390,175 470,160 C550,150 690,147 920,150"
+                fill="none" stroke="#1d4ed8" stroke-width="3"/>
+          <path d="M90,255 C150,245 210,215 260,185 C300,155 340,140 390,132 C470,126 610,124 920,125"
+                fill="none" stroke="#b45309" stroke-width="3"/>
+          <path d="M90,255 C170,254 250,248 310,240 C420,225 520,200 640,185 C740,176 830,172 920,170"
+                fill="none" stroke="#047857" stroke-width="3"/>
+
+          <!-- overtake marker -->
+          <line x1="310" y1="60" x2="310" y2="270" stroke="#9ca3af" stroke-dasharray="6,6"/>
+          <text x="310" y="52" text-anchor="middle" font-size="10" fill="#6b7280">~11.8k</text>
+
+          <!-- legend -->
+          <rect x="120" y="70" width="260" height="66" rx="10" fill="#ffffff" stroke="#e5e7eb"/>
+          <line x1="140" y1="92" x2="170" y2="92" stroke="#1d4ed8" stroke-width="3"/>
+          <text x="178" y="96" font-size="11" fill="#111827">baseline (1, 0, 0)</text>
+
+          <line x1="140" y1="112" x2="170" y2="112" stroke="#b45309" stroke-width="3"/>
+          <text x="178" y="116" font-size="11" fill="#111827">high dopamine (4, 0, 0)</text>
+
+          <line x1="140" y1="132" x2="170" y2="132" stroke="#047857" stroke-width="3"/>
+          <text x="178" y="136" font-size="11" fill="#111827">high serotonin (1, 0.05, 1)</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption>
+      Figure 2. Schematic summary of reported learning behavior. Replace with plots generated from training logs for exact curves.
+    </figcaption>
+  </figure>
+
+  <h3>6.2 Safety–performance frontier</h3>
+  <p>
+    Across 36 moods, mean return and catastrophic collision probability form a continuous trade-off curve.
+    High $k_{\mathrm{DA}}$ clusters at higher return and higher collision probability.
+    Higher $k^{\mathrm{risk}}_{\mathrm{5HT}}$ shifts the agent toward lower collision probability with lower return.
+    The reported Spearman correlation between mean return and collision probability is 0.91.
+  </p>
+
+  <figure>
+    <div class="svg-wrap">
+      <svg viewBox="0 0 980 320" width="100%" height="320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Safety performance frontier schematic">
+        <rect x="0" y="0" width="980" height="320" fill="#ffffff"/>
+        <g font-family="system-ui, -apple-system, sans-serif">
+          <text x="490" y="26" text-anchor="middle" font-size="13" fill="#111827">Safety–performance frontier (schematic)</text>
+
+          <!-- axes -->
+          <line x1="90" y1="270" x2="920" y2="270" stroke="#9ca3af" stroke-width="2"/>
+          <line x1="90" y1="60"  x2="90"  y2="270" stroke="#9ca3af" stroke-width="2"/>
+          <text x="505" y="305" text-anchor="middle" font-size="12" fill="#6b7280">mean return</text>
+          <text x="30" y="165" transform="rotate(-90 30 165)" text-anchor="middle" font-size="12" fill="#6b7280">collision probability</text>
+
+          <!-- frontier curve -->
+          <path d="M140,240 C240,220 340,200 440,170 C560,135 700,105 880,80"
+                fill="none" stroke="#1f2937" stroke-width="3"/>
+
+          <!-- clusters -->
+          <circle cx="200" cy="230" r="6" fill="#047857"/>
+          <circle cx="235" cy="222" r="6" fill="#047857"/>
+          <circle cx="270" cy="215" r="6" fill="#047857"/>
+          <text x="200" y="250" font-size="11" fill="#047857">high risk</text>
+
+          <circle cx="720" cy="110" r="6" fill="#b45309"/>
+          <circle cx="760" cy="102" r="6" fill="#b45309"/>
+          <circle cx="800" cy="95"  r="6" fill="#b45309"/>
+          <text x="720" y="130" font-size="11" fill="#b45309">high dopamine</text>
+
+          <circle cx="520" cy="155" r="6" fill="#1d4ed8"/>
+          <circle cx="560" cy="148" r="6" fill="#1d4ed8"/>
+          <circle cx="600" cy="140" r="6" fill="#1d4ed8"/>
+          <text x="520" y="175" font-size="11" fill="#1d4ed8">mixed</text>
+
+          <text x="490" y="290" text-anchor="middle" font-size="11" fill="#6b7280">
+            Figure 3. Conceptual frontier. The key observation is a smooth trade-off controlled by three scalars.
+          </text>
+        </g>
+      </svg>
+    </div>
+    <figcaption>
+      Figure 3. Safety–performance trade-off observed when sweeping $\mathbf{k}$. Use measured points from evaluation logs for a quantitative plot.
+    </figcaption>
+  </figure>
+
+  <h3>6.3 Behavioral signatures</h3>
+  <p>
+    The serotonin entropy coefficient widens the policy.
+    Reported average action entropy is about 0.86 nats for serotonin-dominant settings, compared to about 0.48 nats for dopamine-dominant settings.
+    The risk coefficient reshapes the value function around hazards by constructing local negative regions from $\rho(s)$.
+    In contrast, dopamine gain primarily rescales values without changing which regions are dangerous.
+  </p>
+
+  <figure>
+    <div class="svg-wrap">
+      <svg viewBox="0 0 980 260" width="100%" height="260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Value landscape schematic">
+        <rect x="0" y="0" width="980" height="260" fill="#ffffff"/>
+        <g font-family="system-ui, -apple-system, sans-serif">
+          <text x="490" y="26" text-anchor="middle" font-size="13" fill="#111827">Value shaping around hazards (schematic)</text>
+
+          <!-- three panels -->
+          <rect x="60" y="50" width="260" height="160" rx="10" fill="#ffffff" stroke="#e5e7eb"/>
+          <rect x="360" y="50" width="260" height="160" rx="10" fill="#ffffff" stroke="#e5e7eb"/>
+          <rect x="660" y="50" width="260" height="160" rx="10" fill="#ffffff" stroke="#e5e7eb"/>
+
+          <text x="190" y="72" text-anchor="middle" font-size="12" fill="#111827">baseline</text>
+          <text x="490" y="72" text-anchor="middle" font-size="12" fill="#111827">high risk shaping</text>
+          <text x="790" y="72" text-anchor="middle" font-size="12" fill="#111827">high dopamine gain</text>
+
+          <!-- hazard markers -->
+          <text x="270" y="140" font-size="14" fill="#111827">X</text>
+          <text x="570" y="140" font-size="14" fill="#111827">X</text>
+          <text x="870" y="140" font-size="14" fill="#111827">X</text>
+
+          <!-- baseline gentle slope -->
+          <path d="M80,185 C120,150 150,125 190,120 C230,115 260,125 300,160"
+                fill="none" stroke="#1d4ed8" stroke-width="3"/>
+          <text x="190" y="205" text-anchor="middle" font-size="10" fill="#6b7280">shallow dip near hazard</text>
+
+          <!-- risk deep valley -->
+          <path d="M380,170 C420,130 460,110 490,110 C520,110 560,130 600,170"
+                fill="none" stroke="#047857" stroke-width="3"/>
+          <path d="M450,170 C470,140 480,125 490,125 C500,125 510,140 530,170"
+                fill="none" stroke="#047857" stroke-width="3"/>
+          <text x="490" y="205" text-anchor="middle" font-size="10" fill="#6b7280">deeper local valley around hazard</text>
+
+          <!-- dopamine rescale -->
+          <path d="M680,195 C720,140 760,110 790,105 C820,100 860,130 900,190"
+                fill="none" stroke="#b45309" stroke-width="3"/>
+          <text x="790" y="205" text-anchor="middle" font-size="10" fill="#6b7280">values amplified, geometry similar</text>
+
+          <text x="490" y="240" text-anchor="middle" font-size="11" fill="#6b7280">
+            Figure 4. Risk shaping changes relative preferences near hazards; dopamine gain mostly scales the magnitude of updates and values.
+          </text>
+        </g>
+      </svg>
+    </div>
+    <figcaption>
+      Figure 4. Conceptual explanation for value “valleys” induced by $k^{\mathrm{risk}}_{\mathrm{5HT}}$.
+      Replace with heatmaps rendered from your checkpoints for exact landscapes.
+    </figcaption>
+  </figure>
+
+  <h3>6.4 Cross-task transfer to MiniHack</h3>
+  <p>
+    Table 2 summarizes steady-state metrics over the final evaluation window in MiniHack HazardRooms.
+    The ordering matches Pac-Mind: higher dopamine increases return but increases deaths, while higher serotonin reduces deaths and increases episode length.
+    No additional tuning is required across tasks beyond reusing the same $\mathbf{k}$ settings and network.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Mood $\mathbf{k}=(k_{\mathrm{DA}},k^{\mathrm{ent}}_{\mathrm{5HT}},k^{\mathrm{risk}}_{\mathrm{5HT}})$</th>
+        <th>Return</th>
+        <th>Death rate</th>
+        <th>Episode length</th>
+        <th>Entropy</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Baseline (1, 0, 0)</td>
+        <td>94 ± 3</td>
+        <td>4.1% ± 0.4</td>
+        <td>1720 ± 60</td>
+        <td>0.61</td>
+      </tr>
+      <tr>
+        <td>High dopamine (4, 0, 0)</td>
+        <td>116 ± 4</td>
+        <td>12.3% ± 0.7</td>
+        <td>1490 ± 50</td>
+        <td>0.45</td>
+      </tr>
+      <tr>
+        <td>High serotonin (1, 0.05, 1)</td>
+        <td>85 ± 2</td>
+        <td>1.3% ± 0.3</td>
+        <td>2370 ± 70</td>
+        <td>0.88</td>
+      </tr>
+      <tr>
+        <td>Mixed (4, 0.05, 1)</td>
+        <td>105 ± 3</td>
+        <td>4.9% ± 0.5</td>
+        <td>1980 ± 65</td>
+        <td>0.66</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>7. Interpretation</h2>
+  <p>
+    The three scalars act as a small, interpretable control interface.
+    Dopamine gain primarily changes how aggressively the system updates, which affects speed and variance.
+    Risk shaping injects a hazard prior through a potential term $\rho(s)$.
+    Entropy drive regulates the action distribution width.
+    Together these axes are sufficient to trace a useful continuum between fast reward collection and cautious survival in the evaluated tasks.
+  </p>
+
+  <h2>8. Limitations</h2>
+  <p>
+    The danger potential $\rho(s)$ is hand-crafted.
+    This makes the risk axis interpretable, but it also hard-codes what the agent should treat as dangerous.
+    The tasks are discrete grid domains; results may not transfer to continuous control without revisiting how $\rho(s)$ is defined.
+    The sweeps train separate agents per mood, so a single set of weights is not shown to span the entire frontier without further machinery.
+  </p>
+
+  <h2>9. Suggested extensions</h2>
+  <div class="panel">
+    <p>
+      A direct next step is a meta-controller that sets $\mathbf{k}$ online from observables such as surprise, hazard proximity, or explicit safety constraints.
+      Another step is to learn $\rho(s)$ from data while keeping the scalar interface fixed.
+      Both directions preserve the low-dimensional control interface while reducing manual engineering.
+    </p>
+  </div>
+
+  <hr class="hr"/>
+
+  <h2>References</h2>
+  <div class="panel">
+    <p>
+      Daw, N. D., Kakade, S. M., and Dayan, P. (2002). Opponent interactions between serotonin and dopamine. Neural Networks.
+    </p>
+    <p>
+      Doya, K. (2002). Metalearning and neuromodulation. Neural Networks.
+    </p>
+    <p>
+      Duan, Y., Schulman, J., Chen, X., Bartlett, P. L., Sutskever, I., and Abbeel, P. (2016). RL$^2$: Fast reinforcement learning via slow reinforcement learning. arXiv:1611.02779.
+    </p>
+    <p>
+      Frémaux, N., and Gerstner, W. (2016). Neuromodulated spike-timing-dependent plasticity and three-factor learning rules. Frontiers in Neural Circuits.
+    </p>
+    <p>
+      Krichmar, J. L. (2013). Value and reward-based learning in neurorobots. Frontiers in Neurorobotics.
+    </p>
+    <p>
+      Miconi, T., Rawal, A., Clune, J., and Stanley, K. O. (2018). Differentiable plasticity. ICLR.
+    </p>
+    <p>
+      Schultz, W., Dayan, P., and Montague, P. R. (1997). A neural substrate of prediction and reward. Science.
+    </p>
+    <p style="margin-bottom: 0;">
+      Xu, Z., van Hasselt, H., and Silver, D. (2018). Meta-gradient reinforcement learning. NeurIPS.
+    </p>
+  </div>
+
+  <p class="small">
+    Notes: figures are schematic to keep the HTML self-contained and stable.
+    Replace them with plots generated from your training logs if you want exact quantitative visualizations.
+  </p>
+</body>
+</html>
