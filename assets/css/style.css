@@ -26,6 +26,22 @@ section {
   padding-top: 30px;
 }
 
+/* Header Contact */
+.header-contact {
+  margin-top: 15px;
+  font-size: 0.9em;
+  line-height: 1.8;
+}
+
+.header-contact a {
+  color: #267CB9;
+}
+
+.header-updated {
+  margin-top: 10px;
+  color: #6a737d;
+}
+
 #experience-highlights h3 {
   margin-top: 25px;
   margin-bottom: 10px;

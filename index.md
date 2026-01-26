@@ -12,8 +12,6 @@ I am actively seeking research collaborations to deepen my understanding of thes
 
 I'm always eager to discuss research opportunities or collaborate on interesting projects. Feel free to reach out!
 
-[Download CV](assets/dario_fumarola_cv.pdf) ・ [dariofumarola90@gmail.com](mailto:dariofumarola90@gmail.com) ・ [LinkedIn](https://www.linkedin.com/in/fumarolad) ・ *Last updated: January 2026*
-
 ### Research Interests
 
 - **Reinforcement Learning and Adaptive Control**: I study how agents allocate computation and risk under uncertainty, with a focus on stable learning, long-horizon credit assignment, and interpretable control signals.

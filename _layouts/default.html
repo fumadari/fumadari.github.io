@@ -34,6 +34,13 @@
         {% endif %}
 
         <p>{{ site.description | default: site.github.project_tagline }}</p>
+
+        <p class="header-contact">
+          <a href="{{ "/assets/dario_fumarola_cv.pdf" | relative_url }}">Download CV</a><br>
+          <a href="mailto:dariofumarola90@gmail.com">dariofumarola90@gmail.com</a><br>
+          <a href="https://www.linkedin.com/in/fumarolad">LinkedIn</a>
+        </p>
+        <p class="header-updated"><small><em>Last updated: January 2026</em></small></p>
       </header>
       <section>
         {{ content }}
