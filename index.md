@@ -8,9 +8,11 @@ Hey! I’m Dario, a Computer Science and Mathematics graduate from Washington an
 
 My research interests sit at the intersection of deep learning, mathematics, and geometry. I’m fascinated by how concepts like graph structures, differential geometry, and topological analysis can enhance neural representations, making models more interpretable and robust. By tapping into these mathematical frameworks, I aim to develop techniques that offer clear, principled insights into complex data, pushing AI towards more transparent and flexible solutions.
 
-I am actively seeking PhD opportunities to deepen my understanding of these approaches and apply them to real-world challenges in scalable machine learning and data-driven discovery.
+I am actively seeking research collaborations to deepen my understanding of these approaches and apply them to real-world challenges in scalable machine learning and data-driven discovery.
 
-[Download CV](assets/dario_fumarola_cv.pdf)
+I'm always eager to discuss research opportunities or collaborate on interesting projects. Feel free to reach out!
+
+[Download CV](assets/dario_fumarola_cv.pdf) ・ [dariofumarola90@gmail.com](mailto:dariofumarola90@gmail.com) ・ [LinkedIn](https://www.linkedin.com/in/fumarolad)
 
 *Last updated: January 2026*
 
@@ -79,9 +81,3 @@ Conducted research with increasing independence, developing and executing a pers
 <p>GeoGAT integrates bonded connectivity, 3D geometry, and electronic descriptors in a sparse molecular graph attention model. A global context node captures molecule-level effects while invariant pair and angle features modulate attention to distinguish conformers and long-range interactions. Across tasks such as solubility, LogP, and binding-related prediction, GeoGAT improves accuracy and yields interpretable attention patterns that localize influential atoms and functional groups.</p>
 </div>
 
-### Contact
-
-I'm always eager to discuss research opportunities or collaborate on interesting projects. Feel free to reach out!
-
-Email: [dariofumarola90@gmail.com](mailto:dariofumarola90@gmail.com)  
-LinkedIn: [Dario Fumarola](https://www.linkedin.com/in/fumarolad)
