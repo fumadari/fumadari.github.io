@@ -10,8 +10,9 @@ My research interests sit at the intersection of deep learning, mathematics, and
 
 I am actively seeking PhD opportunities to deepen my understanding of these approaches and apply them to real-world challenges in scalable machine learning and data-driven discovery.
 
-[Download Resume - 1 Page](assets/dario_fumarola_resume.pdf)  
 [Download CV](assets/dario_fumarola_cv.pdf)
+
+*Last updated: January 2026*
 
 ### Research Interests
 
