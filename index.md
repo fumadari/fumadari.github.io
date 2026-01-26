@@ -40,13 +40,40 @@ Conducted research with increasing independence, developing and executing a pers
 
 ### Presented Work
 
-<div class="toggle-container">
-  <div class="toggle-slider"></div>
-  <button class="toggle-btn active" data-target="conference">Conference</button>
-  <button class="toggle-btn" data-target="research">Research</button>
+<style>
+.pill-toggle {
+  display: inline-flex;
+  background: #e5e7eb;
+  border-radius: 30px;
+  padding: 4px;
+  margin-bottom: 20px;
+}
+.pill-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 26px;
+  background: transparent;
+  color: #57606a;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+.pill-btn.active {
+  background: #0366d6;
+  color: white;
+  box-shadow: 0 2px 8px rgba(3,102,214,0.3);
+}
+.projects-section { display: none; }
+.projects-section.active { display: block; }
+</style>
+
+<div class="pill-toggle">
+  <button class="pill-btn active" onclick="switchTab('conference')">Conference</button>
+  <button class="pill-btn" onclick="switchTab('research')">Research</button>
 </div>
 
-<div id="conference" class="tab-content active">
+<div id="conference" class="projects-section active">
 
 <div class="project-card">
 <h5><a href="./projects/mood-swings.html">Mood Swings: Neuromodulatory Control for Deep RL Agents</a> <span class="venue-badge icml">ICML 2025</span></h5>
@@ -65,7 +92,7 @@ Conducted research with increasing independence, developing and executing a pers
 
 </div>
 
-<div id="research" class="tab-content">
+<div id="research" class="projects-section">
 
 <div class="project-card">
 <h5><a href="./projects/vectors-replication.html">Selective Replication for Efficient k-NN Retrieval</a></h5>
@@ -85,29 +112,11 @@ Conducted research with increasing independence, developing and executing a pers
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const buttons = document.querySelectorAll('.toggle-btn');
-  const slider = document.querySelector('.toggle-slider');
-
-  buttons.forEach((btn, index) => {
-    btn.addEventListener('click', function() {
-      // Update active button
-      buttons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      // Move slider
-      if (index === 1) {
-        slider.classList.add('right');
-      } else {
-        slider.classList.remove('right');
-      }
-
-      // Show/hide content
-      const target = btn.dataset.target;
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-      document.getElementById(target).classList.add('active');
-    });
-  });
-});
+function switchTab(tab) {
+  document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.projects-section').forEach(s => s.classList.remove('active'));
+  document.getElementById(tab).classList.add('active');
+  event.target.classList.add('active');
+}
 </script>
 
