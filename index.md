@@ -12,9 +12,7 @@ I am actively seeking research collaborations to deepen my understanding of thes
 
 I'm always eager to discuss research opportunities or collaborate on interesting projects. Feel free to reach out!
 
-[Download CV](assets/dario_fumarola_cv.pdf) ・ [dariofumarola90@gmail.com](mailto:dariofumarola90@gmail.com) ・ [LinkedIn](https://www.linkedin.com/in/fumarolad)
-
-*Last updated: January 2026*
+[Download CV](assets/dario_fumarola_cv.pdf) ・ [dariofumarola90@gmail.com](mailto:dariofumarola90@gmail.com) ・ [LinkedIn](https://www.linkedin.com/in/fumarolad) ・ *Last updated: January 2026*
 
 ### Research Interests
 
@@ -47,20 +45,17 @@ Conducted research with increasing independence, developing and executing a pers
 <p class="section-subtitle">Conference Publications</p>
 
 <div class="project-card">
-<h5><a href="./projects/elastic-state-models.html">Elastic State Models: Geometry-Aware Adaptive Compute</a></h5>
-<span class="venue-badge neurips">NeurIPS 2025</span>
+<h5><a href="./projects/elastic-state-models.html">Elastic State Models: Geometry-Aware Adaptive Compute</a> <span class="venue-badge neurips">NeurIPS 2025</span></h5>
 <p>Elastic State Models (ESM) add adaptive computation to a streaming state-space backbone by converting per-step error into an integer refinement depth under an explicit compute penalty. When activated, ESM performs latent-space updates using metric-preconditioned gradients with trust-region clipping to stabilize correction. The method concentrates compute on difficult timesteps, improving performance in maze navigation and protein loop repair while using lower average compute than Transformer baselines.</p>
 </div>
 
 <div class="project-card">
-<h5><a href="./projects/broadcast-gain.html">Broadcast-Gain: Minimal Control Plane for Cooperative MARL</a></h5>
-<span class="venue-badge nyrl">NY-RL 2025</span>
+<h5><a href="./projects/broadcast-gain.html">Broadcast-Gain: Minimal Control Plane for Cooperative MARL</a> <span class="venue-badge nyrl">NY-RL 2025</span></h5>
 <p>Broadcast-Gain (BG) is a fixed-rate, neighbor-only overlay that improves coordination in cooperative MARL under lossy communication. Each agent broadcasts two bytes per cycle (a signed residual and a meta tag) without modifying the base PPO+GAE learner; receivers compute a confidence-weighted consensus that gates a phase scheduler and applies a clipped, distance-decayed bias to the MOVE logit near junctions. At ~0.24 kbit/s per agent, BG reduces tail wait by ~5 steps and increases near-gate flow by +392 per 1k steps on hard evaluation cells.</p>
 </div>
 
 <div class="project-card">
-<h5><a href="./projects/mood-swings.html">Mood Swings: Neuromodulatory Control for Deep RL Agents</a></h5>
-<span class="venue-badge icml">ICML 2025</span>
+<h5><a href="./projects/mood-swings.html">Mood Swings: Neuromodulatory Control for Deep RL Agents</a> <span class="venue-badge icml">ICML 2025</span></h5>
 <p>Mood Swings introduces a compact control interface for actor–critic agents using three global scalars: dopaminergic gain on TD error and two serotonergic coefficients controlling entropy drive and threat discounting. These scalars define a continuous "mood" manifold outside the network, enabling behavior shifts by writing three floats rather than retraining. Experiments in Pac-Mind and MiniHack trace smooth safety–performance frontiers, with higher dopamine accelerating learning but increasing collision risk, and higher serotonin improving survival while moderating returns.</p>
 </div>
 
