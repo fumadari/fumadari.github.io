@@ -12,7 +12,14 @@
             margin: 0 auto;
             padding: 20px;
             color: #1a1a1a;
+            transition: background 0.3s, color 0.3s;
         }
+        .dark-toggle { position: fixed; top: 15px; right: 15px; background: #e5e7eb; border: none; border-radius: 20px; padding: 8px 12px; cursor: pointer; font-size: 16px; z-index: 1000; }
+        [data-theme="dark"] { background: #0d1117 !important; color: #c9d1d9 !important; }
+        [data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3 { color: #c9d1d9 !important; }
+        [data-theme="dark"] a { color: #58a6ff !important; }
+        [data-theme="dark"] pre, [data-theme="dark"] code { background: #161b22 !important; }
+        [data-theme="dark"] .dark-toggle { background: #21262d; color: #c9d1d9; }
         h1, h2, h3 {
             color: #2c3e50;
             margin-top: 1.5em;
@@ -35,6 +42,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
+<button class="dark-toggle" onclick="toggleDark()">🌙</button>
+<script>
+  function toggleDark() {
+    const body = document.body, btn = document.querySelector('.dark-toggle');
+    if (body.dataset.theme === 'dark') { body.dataset.theme = 'light'; btn.textContent = '🌙'; localStorage.setItem('theme', 'light'); }
+    else { body.dataset.theme = 'dark'; btn.textContent = '☀️'; localStorage.setItem('theme', 'dark'); }
+  }
+  if (localStorage.getItem('theme') === 'dark') { document.body.dataset.theme = 'dark'; document.querySelector('.dark-toggle').textContent = '☀️'; }
+</script>
 
 <h1>Optimal Selection of Neighbor Vectors Considering Recall and Vectors Accessed</h1>
 
