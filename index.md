@@ -40,9 +40,10 @@ Conducted research with increasing independence, developing and executing a pers
 
 ### Presented Work
 
-<div class="tabs">
-  <button class="tab-btn active" onclick="showTab('conference')">Conference Publications</button>
-  <button class="tab-btn" onclick="showTab('research')">Research Projects</button>
+<div class="toggle-container">
+  <div class="toggle-slider"></div>
+  <button class="toggle-btn active" data-target="conference">Conference</button>
+  <button class="toggle-btn" data-target="research">Research</button>
 </div>
 
 <div id="conference" class="tab-content active">
@@ -84,11 +85,29 @@ Conducted research with increasing independence, developing and executing a pers
 </div>
 
 <script>
-function showTab(tabId) {
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-  document.getElementById(tabId).classList.add('active');
-  document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add('active');
-}
+document.addEventListener('DOMContentLoaded', function() {
+  const buttons = document.querySelectorAll('.toggle-btn');
+  const slider = document.querySelector('.toggle-slider');
+
+  buttons.forEach((btn, index) => {
+    btn.addEventListener('click', function() {
+      // Update active button
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // Move slider
+      if (index === 1) {
+        slider.classList.add('right');
+      } else {
+        slider.classList.remove('right');
+      }
+
+      // Show/hide content
+      const target = btn.dataset.target;
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.getElementById(target).classList.add('active');
+    });
+  });
+});
 </script>
 
