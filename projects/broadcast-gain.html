@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Broadcast-Gain: A 2-Byte Control Plane for Cooperative MARL</title>
+
+  <style>
+    body{
+      font-family: system-ui, -apple-system, sans-serif;
+      line-height: 1.65;
+      max-width: 1020px;
+      margin: 0 auto;
+      padding: 26px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3{
+      color: #1f2937;
+      margin-top: 1.4em;
+      line-height: 1.25;
+    }
+    p{ margin: 0.9em 0; }
+    a{ color: #1d4ed8; }
+    code{
+      background: #f3f4f6;
+      padding: 0.15em 0.35em;
+      border-radius: 4px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.95em;
+    }
+    pre{
+      background: #f3f4f6;
+      padding: 1em;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 1em 0;
+    }
+    .abstract{
+      margin: 1.6em 0;
+      padding: 1.1em 1.2em;
+      background: #f8f9fa;
+      border-left: 4px solid #1f2937;
+    }
+    .meta{
+      margin-top: 0.7em;
+      color: #4b5563;
+      font-size: 0.95em;
+    }
+    .badge{
+      display: inline-block;
+      font-size: 12px;
+      color: #374151;
+      background: #eef2ff;
+      border: 1px solid #e5e7eb;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin: 0 6px 6px 0;
+    }
+    .equation{ margin: 1em 0; text-align: center; }
+    figure{ margin: 1.4em 0; padding: 0; }
+    figcaption{ margin-top: 0.65em; font-style: italic; color: #6b7280; }
+    .panel{
+      background: #f8f9fa;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin: 1.1em 0;
+    }
+    table{
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1em 0;
+      font-size: 0.98em;
+    }
+    th, td{
+      border: 1px solid #e5e7eb;
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th{ background: #f8f9fa; }
+    ul{ margin: 0.5em 0 0.9em 1.15em; }
+    li{ margin: 0.3em 0; }
+    .grid{
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin: 0.9em 0;
+    }
+    @media (min-width: 900px){
+      .grid{ grid-template-columns: 1fr 1fr; }
+    }
+    .svg-wrap{
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 10px;
+      background: #ffffff;
+      overflow-x: auto;
+    }
+    .small{
+      color: #6b7280;
+      font-size: 12px;
+      margin-top: 1.4em;
+    }
+    .hr{
+      height: 1px;
+      background: #e5e7eb;
+      margin: 1.4em 0;
+      border: 0;
+    }
+    .callout{
+      background: #fff7ed;
+      border: 1px solid #fdba74;
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin: 1em 0;
+    }
+    .muted{ color: #6b7280; }
+  </style>
+
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      }
+    };
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+  <h1>Broadcast-Gain: A 2-Byte, Stop-Gradient Control Plane to Trim Long-Tail Latency in Cooperative MARL</h1>
+
+  <div class="abstract">
+    <p>
+      <strong>Abstract.</strong>
+      Cooperative multi-agent reinforcement learning (MARL) under lossy, bursty links often exhibits long-tail latency.
+      Training-time stabilizers and learned communication are expensive and fragile under packet drops.
+      Broadcast-Gain (BG) is a fixed-rate, neighbor-only overlay that adds a minimal control plane without modifying the base learner.
+      Each agent broadcasts two bytes once per cycle: a signed residual of local pressure-progress and a compact meta tag.
+      Receivers keep the freshest packets, form a confidence-weighted consensus, and use it to gate a simple phase scheduler.
+      The overlay only perturbs the policy by shifting a single action logit (MOVE) with a clipped, distance-decayed push near the junction.
+      Bandwidth is approximately 0.24 kbit/s per agent and compute is a few scalar operations per step.
+      In a single-junction grid under heavy loss, BG reduces tail wait (p95) by 4.97 steps on a hard evaluation cell (N=120, drop=0.70, cycle=6),
+      while increasing near-gate flow by +391.9 per 1k steps with negligible idle-red.
+    </p>
+    <div class="meta">
+      <span class="badge">multi-agent RL</span>
+      <span class="badge">lossy communication</span>
+      <span class="badge">control plane</span>
+      <span class="badge">stop-gradient</span>
+      <span class="badge">tail latency</span>
+    </div>
+  </div>
+
+  <h2>1. Motivation</h2>
+  <p>
+    Communication constraints change the failure mode of cooperative MARL.
+    Sparse rewards and delayed credit assignment increase gradient variance.
+    Learned communication protocols often assume smooth and reliable channels.
+    In networked control tasks, the cost of errors concentrates in rare, high-congestion events.
+    A small execution-time control plane can target these events without retraining the policy.
+  </p>
+  <p>
+    BG follows this design.
+    It sends a fixed two-byte message per agent per cycle, performs no backpropagation through the channel, and overlays an existing PPO+GAE policy.
+  </p>
+
+  <h2>2. Setting</h2>
+  <p>
+    The environment is a grid with two perpendicular corridors and a shared junction.
+    A clearance lock enforces a fixed number of steps after a crossing before another crossing is permitted.
+    Agents act each step using local observations and a two-action space: <code>MOVE</code> or <code>WAIT</code>.
+    The junction serves one axis at a time with a binary phase variable $S \in \{+1,-1\}$ that may switch at cycle boundaries.
+  </p>
+  <p>
+    Communication is neighbor-only and lossy.
+    Each directed link drops packets with per-tick probability $p$.
+    BG does not change the observation model, rewards, or training procedure of the base policy.
+  </p>
+
+  <figure>
+    <div class="svg-wrap">
+      <svg viewBox="0 0 980 260" width="100%" height="260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Single junction environment diagram">
+        <rect x="0" y="0" width="980" height="260" fill="#ffffff"/>
+
+        <!-- corridors -->
+        <rect x="70" y="110" width="840" height="40" fill="#f3f4f6" stroke="#e5e7eb"/>
+        <rect x="470" y="30" width="40" height="200" fill="#f3f4f6" stroke="#e5e7eb"/>
+
+        <!-- junction box -->
+        <rect x="455" y="95" width="70" height="70" fill="#ffffff" stroke="#9ca3af" stroke-width="2"/>
+
+        <!-- arrows -->
+        <g stroke="#6b7280" stroke-width="2" fill="none" marker-end="url(#arrow)">
+          <path d="M160,130 L320,130"/>
+          <path d="M820,130 L660,130"/>
+          <path d="M490,60 L490,90"/>
+          <path d="M490,200 L490,170"/>
+        </g>
+
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#6b7280"/>
+          </marker>
+        </defs>
+
+        <!-- labels -->
+        <text x="120" y="100" font-size="12" fill="#111827">axis +1 corridor</text>
+        <text x="520" y="55" font-size="12" fill="#111827">axis -1 corridor</text>
+        <text x="490" y="140" text-anchor="middle" font-size="12" fill="#111827">junction</text>
+        <text x="490" y="158" text-anchor="middle" font-size="11" fill="#6b7280">clearance lock</text>
+
+        <!-- near-gate region -->
+        <rect x="410" y="90" width="160" height="80" fill="none" stroke="#1d4ed8" stroke-width="2" stroke-dasharray="6,6"/>
+        <text x="570" y="86" font-size="11" fill="#1d4ed8" text-anchor="end">near-gate region</text>
+
+        <text x="490" y="245" text-anchor="middle" font-size="11" fill="#6b7280">
+          Figure 1. Single-junction grid with a binary served axis and a clearance lock. BG applies a narrow push near the gate.
+        </text>
+      </svg>
+    </div>
+    <figcaption>
+      Figure 1. The benchmark uses a single junction with a cycle scheduler. Metrics focus on near-gate tail wait and realized crossings.
+    </figcaption>
+  </figure>
+
+  <h2>3. Method</h2>
+
+  <h3>3.1 Two-byte broadcast</h3>
+  <p>
+    Each agent broadcasts a two-byte packet once per cycle to neighbors within a Manhattan radius.
+    The packet contains a signed residual and a compact meta tag:
+  </p>
+
+  <div class="equation">
+    $$\mathrm{pkt}_i = [z_i \mid m_i], \quad z_i \in \{-128,\dots,127\}, \quad m_i \in \{0,\dots,255\}.$$
+  </div>
+
+  <p>
+    The residual $z_i$ summarizes local pressure-progress.
+    A default construction quantizes a temporal-difference residual and uses $\mu$-law companding for robustness under 8-bit quantization.
+    The meta byte packs an axis bit and a distance bin:
+    $$m_i = (\mathrm{axis\ bit} \ll 7) \; | \; (\mathrm{dist\ bin} \;\&\; 0x7F).$$
+  </p>
+
+  <div class="panel">
+    <p>
+      <strong>Stop-gradient interface.</strong>
+      BG does not learn a communication protocol.
+      It uses fixed encoding, fixed aggregation, and fixed actuation.
+      Gradients do not flow through the channel or through the scheduler.
+    </p>
+  </div>
+
+  <h3>3.2 Receiver fusion and confidence</h3>
+  <p>
+    Receivers keep the freshest packet per sender under a short time-to-live.
+    Let $\eta_j = \exp(-\Delta t_j/\tau_{\mathrm{fresh}})$ weight staleness of sender $j$.
+    After decompanding, axis scores are sums over unique fresh senders that support each axis:
+  </p>
+
+  <div class="equation">
+    $$Z_a = \sum_{j \in \mathcal{N}_a} \eta_j\,\hat{z}_j, \quad a \in \{-1,+1\}.$$
+  </div>
+
+  <p>
+    A coverage term and freshness average define an information weight $w_{\mathrm{info}} \in [0,1]$.
+    A consensus score compares the axis sums and is squashed for stability:
+  </p>
+
+  <div class="equation">
+    $$\rho = \tanh\left(\frac{Z_{+1}-Z_{-1}}{\kappa}\right), \quad
+      w_{\mathrm{cons}} = \sigma(\alpha\rho)\,w_{\mathrm{info}}.$$
+  </div>
+
+  <p>
+    $w_{\mathrm{cons}}$ increases with agreement and coverage and decays smoothly under packet loss.
+    This scalar drives both the phase scheduler and the actuation strength near the junction.
+  </p>
+
+  <h3>3.3 Phase scheduling</h3>
+  <p>
+    The scheduler updates the served axis $S$ at cycle boundaries.
+    It enforces a minimum green duration and stretches it when information is weak.
+    It switches when an advantage signal exceeds a confidence-scaled threshold or when a max-green limit is reached.
+    A damping rule reduces oscillations after a wasted-clear cycle, defined as a cycle where the clearance lock prevents any crossing.
+  </p>
+
+  <pre><code>State: served axis S in {+1, -1}, green_age, min_green0
+Inputs per cycle: Z_{+1}, Z_{-1}, w_info, last-cycle crossings x
+
+green_age += 1
+min_green_eff = min_green0 + lambda_stretch * (1 - w_info)
+if green_age &lt; min_green_eff:
+    HOLD
+
+delta = Z_{-S} - Z_{S}
+thresh = theta0 + theta1 * (1 - w_info)
+
+if delta &gt; thresh or green_age &gt;= max_green:
+    S = -S
+    green_age = 0
+    if x == 0:
+        min_green0 = max(min_green_min, min_green0 - delta_wc)
+    else:
+        min_green0 = (1 - beta_mg) * min_green0 + beta_mg * min_green_tgt</code></pre>
+
+  <h3>3.4 Near-gate logit adjustment</h3>
+  <p>
+    BG perturbs the policy by modifying only the MOVE logit at execution time.
+    Let $\ell^{(i)}_{\mathrm{move}}$ be the base MOVE logit for agent $i$.
+    The overlay adds a clipped, distance-decayed term that depends on the served axis, consensus, and a green-only fairness accumulator.
+  </p>
+
+  <div class="equation">
+    $$\ell^{(i)}_{\mathrm{move}}\;\leftarrow\;\ell^{(i)}_{\mathrm{move}} + g^{(i)}_{\mathrm{add}},$$
+    $$g^{(i)}_{\mathrm{add}} = \mathrm{clip}\left(
+      \Lambda\,\mathrm{sgn}(s_i S)\,e^{-d_i/\tau}\,w_{\mathrm{cons}} + \gamma_{\mathrm{fair}}\,w_{\mathrm{cons}}\,\phi_i,
+      -A, A\right).$$
+  </div>
+
+  <p>
+    $s_i \in \{+1,-1\}$ is the agent axis, $d_i$ is grid distance to the gate, and $\phi_i \in [0,1]$ increases with near-gate wait on green and decays otherwise.
+    A hard-stop safety rule clamps $g^{(i)}_{\mathrm{add}}=-A$ when an agent is close to the gate on the red axis.
+  </p>
+
+  <div class="callout">
+    <p>
+      <strong>Why only one logit.</strong>
+      Restricting actuation to a single logit makes the overlay easy to reason about and bound.
+      It also reduces the risk of unintended side effects on other actions.
+    </p>
+  </div>
+
+  <h3>3.5 Small-perturbation guarantees</h3>
+  <p>
+    BG changes the policy by shifting only one logit by $\delta$ and clipping $|\delta| \le A$.
+    For any observation $o$, the per-state drift is bounded.
+  </p>
+
+  <div class="equation">
+    $$D_{\mathrm{TV}}\big(\pi_{\mathrm{BG}}(\cdot|o),\pi(\cdot|o)\big)
+      \le \tanh\left(\frac{|\delta|}{4}\right), \quad
+      D_{\mathrm{KL}}\big(\pi_{\mathrm{BG}}(\cdot|o)\,\|\,\pi(\cdot|o)\big) \le \frac{\delta^2}{8}.$$
+  </div>
+
+  <p>
+    These bounds formalize that BG is a small execution-time perturbation under the chosen clip level.
+  </p>
+
+  <h2>4. Bandwidth and compute</h2>
+  <p>
+    Each agent sends 16 bits per cycle.
+    With environment step frequency $f_{\mathrm{step}}$ and cycle length $C$, the bitrate per agent is
+    $$\mathrm{bps} = 16\,\frac{f_{\mathrm{step}}}{C}.$$
+    For example, $f_{\mathrm{step}}=60$ Hz and $C=4$ yields about 240 bps.
+    Per-step compute includes decompanding, a few sums, and one logit add.
+    The overlay does not add networks or attention layers.
+  </p>
+
+  <h2>5. Experiments</h2>
+
+  <h3>5.1 Protocol</h3>
+  <p>
+    Training uses PPO with generalized advantage estimation (GAE) and no BG.
+    After training, the policy is frozen.
+    Evaluation compares the frozen baseline to the same frozen policy with BG enabled.
+    BG constants are fixed across all test cells.
+  </p>
+
+  <div class="panel">
+    <p>
+      <strong>Factor grid.</strong>
+      Number of agents $N \in \{100,120,140\}$, per-tick packet drop $p \in \{0.60,0.65,0.70\}$, and cycle length $C \in \{3,5,6\}$.
+      This yields 108 evaluation cells.
+      Primary metric is near-gate tail wait p95 (lower is better).
+      Secondary metrics include near-gate crossings per 1k steps (higher is better) and idle-red (lower is better).
+    </p>
+  </div>
+
+  <h3>5.2 Training details</h3>
+  <p class="muted">
+    PPO settings reported with the project: 2000 updates per seed, rollout length 2048, 32 minibatches, 4 epochs,
+    Adam learning rate $3\times 10^{-4}$, $\gamma=0.99$, $\lambda=0.95$, clip 0.2, entropy and value coefficients 0.01 and 0.5,
+    and gradient norm clip 0.5.
+    Evaluation runs $4\times 10^5$ environment steps per seed per cell at 60 Hz.
+  </p>
+
+  <h2>6. Results</h2>
+
+  <h3>6.1 Hard cell result</h3>
+  <p>
+    The strongest reported evaluation cell uses $N=120$, drop $p=0.70$, and cycle length $C=6$.
+    BG with TD residuals reduces tail p95 by 4.97 steps and increases near-gate flow by +391.9 per 1k steps relative to the frozen baseline.
+    The RawEnt variant provides smaller gains on this cell.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Variant (eval cell)</th>
+        <th>Signed Improvement Index</th>
+        <th>Tail p95 change (steps)</th>
+        <th>Near-gate change (/1k steps)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Frozen baseline</td>
+        <td>0.000</td>
+        <td>0.00</td>
+        <td>0.0</td>
+      </tr>
+      <tr>
+        <td>BG (TD)</td>
+        <td>0.450</td>
+        <td><strong>-4.97</strong></td>
+        <td><strong>+391.9</strong></td>
+      </tr>
+      <tr>
+        <td>BG (RawEnt)</td>
+        <td>0.240</td>
+        <td>-2.35</td>
+        <td>+328.5</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <figure>
+    <div class="svg-wrap">
+      <svg viewBox="0 0 980 320" width="100%" height="320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bar chart of hard-cell deltas">
+        <rect x="0" y="0" width="980" height="320" fill="#ffffff"/>
+        <text x="490" y="26" text-anchor="middle" font-size="13" fill="#111827">Hard cell deltas (N=120, drop=0.70, cycle=6)</text>
+
+        <!-- panels -->
+        <rect x="60" y="50" width="400" height="220" rx="10" fill="#ffffff" stroke="#e5e7eb"/>
+        <rect x="520" y="50" width="400" height="220" rx="10" fill="#ffffff" stroke="#e5e7eb"/>
+
+        <text x="260" y="70" text-anchor="middle" font-size="12" fill="#111827">Tail p95 change (steps)</text>
+        <text x="720" y="70" text-anchor="middle" font-size="12" fill="#111827">Near-gate change (/1k steps)</text>
+
+        <!-- left axis -->
+        <line x1="90" y1="250" x2="430" y2="250" stroke="#9ca3af"/>
+        <line x1="90" y1="90" x2="90" y2="250" stroke="#9ca3af"/>
+        <text x="88" y="255" text-anchor="end" font-size="10" fill="#6b7280">0</text>
+        <text x="88" y="95" text-anchor="end" font-size="10" fill="#6b7280">-6</text>
+        <text x="260" y="265" text-anchor="middle" font-size="10" fill="#6b7280">more negative is better</text>
+
+        <!-- right axis -->
+        <line x1="550" y1="250" x2="890" y2="250" stroke="#9ca3af"/>
+        <line x1="550" y1="90" x2="550" y2="250" stroke="#9ca3af"/>
+        <text x="548" y="255" text-anchor="end" font-size="10" fill="#6b7280">0</text>
+        <text x="548" y="95" text-anchor="end" font-size="10" fill="#6b7280">+420</text>
+        <text x="720" y="265" text-anchor="middle" font-size="10" fill="#6b7280">more positive is better</text>
+
+        <!-- bars: p95: baseline 0, TD -4.97, RawEnt -2.35 -->
+        <!-- scale -6..0 mapped to y 90..250 -->
+        <!-- y(value) = 250 - (value/ -6)*160 for negative values; baseline is 250 -->
+        <g fill="#bfdbfe" stroke="#1d4ed8">
+          <rect x="140" y="250" width="70" height="0"/>
+          <rect x="240" y="117.5" width="70" height="132.5"/>
+          <rect x="340" y="187.3" width="70" height="62.7"/>
+        </g>
+        <g font-size="10" fill="#111827">
+          <text x="175" y="285" text-anchor="middle">Baseline</text>
+          <text x="275" y="285" text-anchor="middle">BG TD</text>
+          <text x="375" y="285" text-anchor="middle">BG RawEnt</text>
+
+          <text x="275" y="112" text-anchor="middle">-4.97</text>
+          <text x="375" y="182" text-anchor="middle">-2.35</text>
+        </g>
+
+        <!-- bars: near-gate: baseline 0, TD 391.9, RawEnt 328.5 -->
+        <!-- scale 0..420 mapped to y 250..90 -->
+        <!-- y = 250 - (value/420)*160 -->
+        <g fill="#d1fae5" stroke="#047857">
+          <rect x="600" y="250" width="70" height="0"/>
+          <rect x="700" y="100.9" width="70" height="149.1"/>
+          <rect x="800" y="124.8" width="70" height="125.2"/>
+        </g>
+        <g font-size="10" fill="#111827">
+          <text x="635" y="285" text-anchor="middle">Baseline</text>
+          <text x="735" y="285" text-anchor="middle">BG TD</text>
+          <text x="835" y="285" text-anchor="middle">BG RawEnt</text>
+
+          <text x="735" y="96" text-anchor="middle">+391.9</text>
+          <text x="835" y="120" text-anchor="middle">+328.5</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption>
+      Figure 2. Fixed-size SVG chart of the hard-cell improvements reported for BG. Baseline bars are zero by definition.
+    </figcaption>
+  </figure>
+
+  <h3>6.2 Aggregate behavior and mechanism check</h3>
+  <p>
+    Across 108 evaluation cells, BG wins 78 (72%).
+    Improvements concentrate at larger $N$ and longer cycle lengths.
+    Very short cycles can be neutral or slightly negative.
+    Under higher packet drop, BG degrades smoothly rather than failing abruptly.
+  </p>
+  <p>
+    A mechanism check on the training reference configuration (N=140, drop=0.70, cycle=6) reports reallocation into green and improved near-gate flow.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Variant (train cell)</th>
+        <th>Attention-green share change (pp)</th>
+        <th>Realized-green share change (pp)</th>
+        <th>Near-gate change (/1k steps)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>BG (TD)</td>
+        <td>+16.17</td>
+        <td>+19.89</td>
+        <td>+160.6</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>7. Robustness notes</h2>
+  <p>
+    Two design parameters interact strongly with loss: neighborhood radius and packet staleness.
+    Small radii and short time-to-live windows limit stale contradictions while preserving enough coverage for consensus.
+    The project reports stable wins for radii in the range 2 to 3 and time-to-live of 1 to 2 cycles.
+  </p>
+  <p>
+    Actuation should be tuned conservatively.
+    Increasing the push strength $\Lambda$ while keeping the clip $A$ moderate avoids oscillations.
+    For short cycles, increasing minimum-green stretching and reducing switch aggressiveness can prevent premature flips under weak information.
+  </p>
+
+  <h2>8. Limitations and extensions</h2>
+  <p>
+    The benchmark focuses on a single junction.
+    Multi-junction settings introduce coupling between phases and may require multi-hop or hierarchical aggregation.
+    The encoding is fixed and uses a single scalar residual.
+    More complex tasks may benefit from adaptive rate, adaptive quantization, or uncertainty-driven time-to-live.
+  </p>
+  <p>
+    A practical extension pairs a learned short-horizon predictor with the BG gate at execution time.
+    This keeps learning off the link while preserving robustness under bursty delivery.
+  </p>
+
+  <hr class="hr"/>
+
+  <h2>References</h2>
+  <div class="panel">
+    <p>
+      Schulman, J., Moritz, P., Levine, S., Jordan, M. I., and Abbeel, P. (2015). High-dimensional continuous control using generalized advantage estimation. arXiv:1506.02438.
+    </p>
+    <p>
+      Schulman, J., Wolski, F., Dhariwal, P., Radford, A., and Klimov, O. (2017). Proximal policy optimization algorithms. arXiv:1707.06347.
+    </p>
+    <p>
+      Sukhbaatar, S., Szlam, A., and Fergus, R. (2016). Learning multiagent communication with backpropagation. NeurIPS.
+    </p>
+    <p>
+      Foerster, J. N., Assael, Y. M., de Freitas, N., and Whiteson, S. (2016). Learning to communicate with deep multi-agent reinforcement learning. NeurIPS.
+    </p>
+    <p style="margin-bottom: 0;">
+      Kim, D., Moon, S., Hostallero, D., Kang, W. J., Lee, T., Son, K., and Yi, Y. (2019). Learning to schedule communication in multi-agent reinforcement learning. ICLR.
+    </p>
+  </div>
+
+  <p class="small">
+    This page summarizes the project "Broadcast-Gain: A 2-Byte, Stop-Gradient Control Plane to Trim Long-Tail Latency in Cooperative MARL".
+    Update any environment specifics, hyperparameters, and results to match your repository logs if you reproduce the experiments.
+  </p>
+</body>
+</html>

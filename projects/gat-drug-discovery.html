@@ -1,671 +1,678 @@
-t<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Geometric Graph Attention Networks for Molecular Analysis with Context-Aware Attention</title>
-    <style>
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            line-height: 1.6;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px;
-            color: #1a1a1a;
-        }
-        h1, h2, h3 {
-            color: #2c3e50;
-            margin-top: 1.5em;
-        }
-        p {
-            margin: 1em 0;
-        }
-        .abstract {
-            font-style: italic;
-            margin: 2em 0;
-            padding: 1em;
-            background: #f8f9fa;
-            border-left: 4px solid #2c3e50;
-        }
-        code {
-            background: #f8f9fa;
-            padding: 0.2em 0.4em;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-        }
-        pre {
-            background: #f8f9fa;
-            padding: 1em;
-            border-radius: 4px;
-            overflow-x: auto;
-        }
-        figure {
-            margin: 2em 0;
-            text-align: center;
-        }
-        figcaption {
-            font-style: italic;
-            margin-top: 0.5em;
-            color: #666;
-        }
-        .equation {
-            margin: 1em 0;
-            text-align: center;
-        }
-        .implementation {
-            background: #f8f9fa;
-            padding: 1em;
-            margin: 1em 0;
-            border-radius: 4px;
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>mermaid.initialize({startOnLoad: true});</script>
-</head>
-<body>
-    <h1>GeoGAT: A Geometric Graph Attention Network for Molecular Property Prediction with Context-Aware Attention</h1>
-    <div class="abstract">
-        <strong>Abstract:</strong> This report presents GeoGAT, a geometric Graph Attention Network that enhances molecular property prediction by combining graph-based representations with 3D geometric descriptors and quantum chemical features. Our key innovation is a global context supernode that captures long-range molecular interactions through a specialized attention mechanism incorporating distance-aware attention weights and quantum mechanical descriptors. Starting from SMILES input, we generate rich atomic embeddings incorporating spatial and electronic characteristics, enabling the model to identify structurally and chemically relevant substructures. Through extensive experimentation on standard benchmark datasets including QM9 and PDBbind, we demonstrate that GeoGAT achieves strong performances in predicting properties such as binding affinity and solubility. Visualization of attention patterns reveals a correlation with established chemical knowledge, highlighting functional groups and reactive centers crucial for molecular behavior.
-    </div>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GeoGAT: Geometry-Aware Graph Attention for Molecular Property Prediction</title>
 
-    <h2>1. Introduction</h2>
-    <p>
-        Accurate prediction of molecular properties from structure remains a central challenge in drug discovery and materials science. While Graph Neural Networks (GNNs) have shown promise in this domain, traditional approaches often rely solely on topological information, overlooking crucial geometric and quantum mechanical features that govern molecular behavior. This limitation becomes particularly apparent when predicting properties that depend on 3D structural arrangements or long-range interactions, such as protein-ligand binding affinities or conformational energetics.
-    </p>
-    <p>
-        We address these challenges with GeoGAT, a Geometric Graph Attention Network that enriches molecular graph representations with three key innovations: (1) integration of 3D geometric descriptors derived from conformer generation, (2) incorporation of quantum chemical features including partial charges and orbital information, and (3) introduction of a global context supernode that captures and redistributes long-range molecular information. The supernode mechanism enables our model to learn subtle but important molecular effects such as ring current contributions, distant hydrogen bonding networks, and complex electronic influences that traditional GNNs might miss.
-    </p>
-    <p>
-        Beyond improving prediction accuracy, GeoGAT provides interpretable insights through its attention mechanism, which naturally highlights chemically relevant patterns. By analyzing attention weights, chemists and computational biologists can identify key substructures responsible for specific properties, facilitating rational drug design decisions. Our extensive validation shows that these learned patterns align remarkably well with established chemical principles, suggesting that GeoGAT learns meaningful chemical representations rather than standard statistical correlations.
-    </p>
-
-    <h3>1.1 Related Work</h3>
-    <p>
-    Recent advances in molecular property prediction have seen significant contributions from various graph-based approaches. SchNet introduced continuous-filter convolutional layers for modeling quantum interactions, while DimeNet++ leveraged directional message passing to capture spatial information in molecular graphs. Graph attention networks (GATs) have shown particular promise, with models like AttentiveFP demonstrating the value of learnable attention mechanisms for molecular fingerprinting. More recently, 3D-Transformer architectures have attempted to directly operate on molecular conformers, though they often struggle with rotational invariance and computational scalability. Our work builds upon these foundations while addressing their limitations through geometric feature integration and the novel supernode mechanism.
-    </p>
-    
-    <p>
-        The remainder of this report is organized as follows. Section 2 details our data preparation pipeline and feature engineering approach. Section 3 presents the GeoGAT architecture, including our novel geometric attention mechanism and supernode integration. Section 4 demonstrates GeoGAT's effectiveness through comprehensive experiments and analyses, including detailed case studies on drug-like molecules. In section 5, we conclude by discussing limitations, extensions on AWS with protein folding models, and future directions for geometric deep learning in molecular property prediction.
-    </p>
-
-    <h2>2. Data and Preprocessing</h2>
-    <p>
-        Our evaluation framework builds upon three widely used molecular datasets that capture different aspects of chemical behavior. The QM9 dataset provides quantum mechanical properties for approximately 134,000 small organic molecules, computed using density functional theory. This dataset serves as our primary benchmark for electronic and energetic properties. For drug discovery applications, we utilize a curated subset of ChEMBL containing roughly 100,000 drug-like molecules with experimental binding data against diverse protein targets. Additionally, we incorporate the PDBbind dataset, comprising 20,000 protein-ligand complexes with experimentally determined binding affinities, to validate our model's ability to capture complex structural interactions.
-    </p>
-    <p>
-        For each molecule, we generate a comprehensive feature representation that combines atomic, geometric, and quantum mechanical properties. The atomic features capture basic chemical properties through a 32-dimensional vector encoding elements such as atomic number, hybridization state, and formal charge. Geometric features are computed from 3D conformers generated using the MMFF94 force field, resulting in a 16-dimensional vector that includes local coordinate frames, bond angles, and molecular surface descriptors. We complement these with quantum chemical features (8 dimensions) derived from semi-empirical calculations, including partial charges and local electronic density descriptors.
-    </p>
-    <p>
-        Data quality and consistency are ensured through a rigorous preprocessing pipeline. We standardize molecular representations using RDKit's canonical form generation and implement careful handling of tautomers and charged states. Three-dimensional conformers are generated using a distance geometry approach followed by force field optimization, with ensemble averaging over low-energy conformers to reduce conformational bias. For the binding affinity data, we apply protein-ligand complex preparation protocols that include proper treatment of protonation states and removal of crystallographic artifacts.
-    </p>
-    <p>
-        To ensure robust evaluation of model generalization, we employ a scaffold-based splitting strategy that separates structurally similar molecules into the same partition. The final split allocates 80% of the data for training, with 10% each for validation and testing. This approach provides a more challenging and realistic assessment than random splitting, as it requires the model to generalize to novel molecular scaffolds rather than making predictions on close structural analogs of training compounds. During development, we utilize 5-fold cross-validation on the training set for hyperparameter optimization, with final performance reported on the held-out test set.
-    </p>
-
-    <h2>3. Methodology</h2>
-
-    <p>
-        GeoGAT's architecture integrates geometric information and quantum chemical features into a graph attention framework through a novel hierarchical design. The model processes molecular graphs G = (V, E), where V represents atoms and E represents bonds, enriched with the geometric and quantum features described in Section 2. Figure 1 provides an overview of our architecture, highlighting the interaction between local atomic representations and the global context mechanism.
-    </p>
-
-<div class="architecture-diagram" style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <!-- Input Features -->
-        <div class="component" style="background: white; padding: 15px; border: 2px solid #ddd; border-radius: 8px; width: 20%;">
-            <h4 style="margin: 0 0 10px 0; font-size: 14px;">Input Features</h4>
-            <ul style="margin: 0; padding-left: 15px; font-size: 12px;">
-                <li>Atomic (xᵢ)</li>
-                <li>Geometric (gᵢ)</li>
-                <li>Quantum (qᵢ)</li>
-            </ul>
-        </div>
-        <!-- Arrow -->
-        <div style="font-size: 20px;">→</div>
-        <!-- Feature Encoder -->
-        <div class="component" style="background: white; padding: 15px; border: 2px solid #ddd; border-radius: 8px; width: 20%;">
-            <h4 style="margin: 0 0 10px 0; font-size: 14px;">Feature Encoder</h4>
-            <ul style="margin: 0; padding-left: 15px; font-size: 12px;">
-                <li>MLP Projection</li>
-                <li>Feature Fusion</li>
-                <li>Dim: 256</li>
-            </ul>
-        </div>
-        <!-- Arrow -->
-        <div style="font-size: 20px;">→</div>
-        <!-- Attention Layers -->
-        <div class="component" style="background: #e3f2fd; padding: 15px; border: 2px solid #90caf9; border-radius: 8px; width: 20%;">
-            <h4 style="margin: 0 0 10px 0; font-size: 14px;">Attention Layers</h4>
-            <ul style="margin: 0; padding-left: 15px; font-size: 12px;">
-                <li>Geometric Bias</li>
-                <li>Multi-head Attention</li>
-                <li>Supernode Integration</li>
-            </ul>
-        </div>
-        <!-- Arrow -->
-        <div style="font-size: 20px;">→</div>
-        <!-- Prediction Head -->
-        <div class="component" style="background: white; padding: 15px; border: 2px solid #ddd; border-radius: 8px; width: 20%;">
-            <h4 style="margin: 0 0 10px 0; font-size: 14px;">Prediction Head</h4>
-            <ul style="margin: 0; padding-left: 15px; font-size: 12px;">
-                <li>Global Pooling</li>
-                <li>Property MLP</li>
-                <li>Output Layer</li>
-            </ul>
-        </div>
-    </div>
-    
-    <!-- Supernode -->
-    <div style="display: flex; justify-content: center;">
-        <div style="background: #fff3e0; padding: 15px; border: 2px solid #ffb74d; border-radius: 8px; width: 30%; text-align: center;">
-            <h4 style="margin: 0 0 5px 0; font-size: 14px;">Global Context Supernode</h4>
-            <p style="margin: 0; font-size: 12px;">Bidirectional attention with all atoms</p>
-        </div>
-    </div>
-    
-    <!-- Figure Caption -->
-    <p style="text-align: center; margin-top: 20px; font-style: italic; color: #666; font-size: 14px;">
-        Figure 1: Overview of GeoGAT architecture showing feature encoding, attention layers, and prediction head.
-    </p>
-    </div>
-
-    <p>
-        The foundation of our approach lies in the initial embedding layer, which projects each atom's features into a learned representation space. For each atom v, we compute its initial representation \(\mathbf{h}_v^{(0)}\) by combining atomic (\(\mathbf{x}_v\)), quantum (\(\mathbf{q}_v\)), and geometric (\(\mathbf{g}_v\)) features through a learnable transformation:
-    </p>
-
-    <div class="equation">
-        $$\mathbf{h}_v^{(0)} = \text{MLP}_{\text{embed}}([\mathbf{x}_v \| \mathbf{q}_v \| \mathbf{g}_v])$$
-    </div>
-
-    <p>
-        The core innovation of GeoGAT lies in its geometric attention mechanism, which extends the standard graph attention formulation to incorporate spatial and electronic structure information. For each attention head k, we compute attention coefficients between atoms i and j as:
-    </p>
-
-    <div class="equation">
-        $$\alpha_{ij}^{(k)} = \text{softmax}_j\left(\frac{(\mathbf{W}_Q^{(k)}\mathbf{h}_i)^\top(\mathbf{W}_K^{(k)}\mathbf{h}_j)}{\sqrt{d_k}} + \gamma_{ij}(\mathbf{g}_i, \mathbf{g}_j)\right)$$
-    </div>
-
-    <p>
-        The geometric bias term \(\gamma_{ij}\) encodes crucial spatial relationships between atoms, incorporating distance and angular information:
-    </p>
-
-    <div class="equation">
-        $$\gamma_{ij}(\mathbf{g}_i, \mathbf{g}_j) = \text{MLP}_{\text{geo}}([\|\mathbf{r}_{ij}\|_2 \| \angle_{ijk} \| \phi_{ijkl}])$$
-    </div>
-
-    <p>
-        A key feature of our architecture is the global context supernode, which maintains a comprehensive representation of the entire molecule. This supernode participates in bidirectional attention with all atoms, enabling the model to capture long-range interactions and global electronic effects. The supernode's representation \(\mathbf{h}_s\) is updated in parallel with the atomic representations through specialized attention layers:
-    </p>
-
-    <div class="equation">
-        $$\mathbf{h}_s^{(l+1)} = \text{MultiHead}\left(\mathbf{h}_s^{(l)}, \{\mathbf{h}_v^{(l)}\}_{v \in V}\right)$$
-    </div>
-
-    <p>
-        The atomic representations are simultaneously updated through attention operations that incorporate both local atomic neighbors and the global context:
-    </p>
-
-    <div class="equation">
-        $$\mathbf{h}_v^{(l+1)} = \text{MultiHead}\left(\mathbf{h}_v^{(l)}, \{\mathbf{h}_u^{(l)}\}_{u \in \mathcal{N}(v)} \cup \{\mathbf{h}_s^{(l)}\}\right)$$
-    </div>
-
-    <p>
-        For final property prediction, we combine the supernode representation with a weighted pooling of atomic features. This approach allows the model to leverage both global and local molecular information:
-    </p>
-
-    <div class="equation">
-        $$\hat{y} = \text{MLP}_{\text{pred}}\left(\left[\mathbf{h}_s^{(L)} \| \sum_{v \in V} w_v\mathbf{h}_v^{(L)}\right]\right)$$
-    </div>
-
-    <p>
-        The model is trained end-to-end using a multi-objective loss function that combines property prediction with auxiliary geometric tasks. The primary prediction loss (MSE or BCE, depending on the target property) is supplemented with a geometric reconstruction term that encourages the model to maintain accurate spatial representations, and a regularization term that promotes feature consistency:
-    </p>
-
-    <div class="equation">
-        $$\mathcal{L}_{\text{total}} = \mathcal{L}_{\text{pred}} + \lambda_1\mathcal{L}_{\text{geo}} + \lambda_2\mathcal{L}_{\text{reg}}$$
-    </div>
-
-    <p>
-        The geometric reconstruction loss \(\mathcal{L}_{\text{geo}}\) supervises the model's ability to predict interatomic distances and angles, while the regularization term \(\mathcal{L}_{\text{reg}}\) ensures that the learned representations respect molecular symmetries and geometric invariances. The hyperparameters \(\lambda_1\) and \(\lambda_2\) are tuned on the validation set to balance these competing objectives.
-    </p>
-
-    <p>
-        The model is trained end-to-end using a multi-objective loss function that combines property prediction with auxiliary geometric tasks...
-    </p>
-
-    <figure>
-        <svg viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <!-- Slight roughening filter -->
-            <filter id="roughen" x="0" y="0" width="100%" height="100%">
-              <feTurbulence type="turbulence" baseFrequency="0.02" numOctaves="1" result="turbulence"/>
-              <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="2" xChannelSelector="R" yChannelSelector="G"/>
-            </filter>
-          </defs>
-
-          <!-- Background -->
-          <rect width="800" height="500" fill="#ffffff"/>
-
-          <!-- Grid lines -->
-          <g stroke="#e0e0e0" stroke-width="0.5">
-            <line x1="100" y1="50" x2="100" y2="400"/>
-            <line x1="250" y1="50" x2="250" y2="400"/>
-            <line x1="400" y1="50" x2="400" y2="400"/>
-            <line x1="550" y1="50" x2="550" y2="400"/>
-            <line x1="700" y1="50" x2="700" y2="400"/>
-            <line x1="100" y1="50" x2="700" y2="50"/>
-            <line x1="100" y1="140" x2="700" y2="140"/>
-            <line x1="100" y1="230" x2="700" y2="230"/>
-            <line x1="100" y1="320" x2="700" y2="320"/>
-            <line x1="100" y1="400" x2="700" y2="400"/>
-          </g>
-
-          <!-- Training curves with more "wiggly" paths and a roughen filter -->
-          <!-- Training Loss -->
-          <path d="M100,350 C130,340 180,320 250,200 C320,180 370,160 400,150 C500,140 600,135 700,120" 
-                fill="none" stroke="#2563eb" stroke-width="2" filter="url(#roughen)"/>
-
-          <!-- Validation Loss -->
-          <path d="M100,360 C140,345 210,300 250,210 C300,190 350,170 400,160 C450,150 600,140 700,135" 
-                fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="4,4" filter="url(#roughen)"/>
-
-          <!-- Geometric Feature Learning -->
-          <path d="M100,300 C120,250 180,200 200,100 C250,90 300,85 400,82 C500,80 600,79 700,80" 
-                fill="none" stroke="#dc2626" stroke-width="2" filter="url(#roughen)"/>
-
-          <!-- Attention Head Specialization -->
-          <path d="M100,380 C150,370 220,340 300,350 C400,320 450,200 500,150 C550,130 600,120 700,100" 
-                fill="none" stroke="#059669" stroke-width="2" filter="url(#roughen)"/>
-
-          <!-- Phase Markers -->
-          <line x1="250" y1="50" x2="250" y2="400" stroke="#666" stroke-width="1" stroke-dasharray="4,4"/>
-          <line x1="500" y1="50" x2="500" y2="400" stroke="#666" stroke-width="1" stroke-dasharray="4,4"/>
-          <text x="220" y="40" fill="#666" font-size="12">Phase I</text>
-          <text x="470" y="40" fill="#666" font-size="12">Phase II</text>
-
-          <!-- Axis Labels -->
-          <text x="400" y="440" text-anchor="middle" font-size="14">Training Epochs</text>
-          <text x="50" y="225" transform="rotate(-90,50,225)" text-anchor="middle" font-size="14">Performance Metrics</text>
-
-          <!-- Epoch markers -->
-          <text x="100" y="420" text-anchor="middle" font-size="12">0</text>
-          <text x="250" y="420" text-anchor="middle" font-size="12">50</text>
-          <text x="400" y="420" text-anchor="middle" font-size="12">100</text>
-          <text x="550" y="420" text-anchor="middle" font-size="12">150</text>
-          <text x="700" y="420" text-anchor="middle" font-size="12">200</text>
-
-          <!-- Legend -->
-          <g transform="translate(100,460)">
-            <line x1="0" y1="0" x2="20" y2="0" stroke="#2563eb" stroke-width="2"/>
-            <text x="25" y="5" font-size="12">Training Loss</text>
-            
-            <line x1="120" y1="0" x2="140" y2="0" stroke="#2563eb" stroke-width="2" stroke-dasharray="4,4"/>
-            <text x="145" y="5" font-size="12">Validation Loss</text>
-            
-            <line x1="240" y1="0" x2="260" y2="0" stroke="#dc2626" stroke-width="2"/>
-            <text x="265" y="5" font-size="12">Geometric Learning</text>
-            
-            <line x1="380" y1="0" x2="400" y2="0" stroke="#059669" stroke-width="2"/>
-            <text x="405" y="5" font-size="12">Attention Specialization</text>
-          </g>
-
-          <!-- Title -->
-          <text x="400" y="20" text-anchor="middle" font-weight="bold" font-size="16">GeoGAT Training Dynamics</text>
-        </svg>
-        <figcaption style="font-style: italic; margin-top: 0.5em; color: #666;">
-            Figure 2: GeoGAT Training curves show evolving loss, geometric features, and attention specialization over time.
-        </figcaption>
-    </figure>
-
-
-    <h2>4. Results and Analysis</h2>
-
-    <p>
-        We evaluate GeoGAT's performance through a comprehensive series of experiments on molecular property prediction tasks, analyzing both quantitative performance and interpretability aspects. Our results demonstrate consistent improvements over existing methods while providing chemically meaningful insights through attention pattern analysis.
-    </p>
-
-    <h3>4.1 Quantitative Performance</h3>
-
-    <p>
-        GeoGAT achieves state-of-the-art performance across multiple molecular property prediction tasks, as shown in Figure 3. Most notably, we observe a 27% reduction in Mean Absolute Error (MAE) for binding affinity prediction compared to the previous best method (DimeNet++). For LogP prediction, GeoGAT achieves an RMSE of 0.20, representing a 29% improvement over SchNet (0.34) and a 35% improvement over standard GAT architectures (0.31). These improvements are particularly pronounced for molecules with complex 3D geometries and long-range electronic effects, validating our geometric attention mechanism's effectiveness.
-    </p>
-
-    <div class="figure">
-        <figure>
-            <div style="width:100%; max-width:800px; margin:0 auto;">
-                <div class="w-full h-96 p-4 bg-white rounded-lg shadow">
-                    <h3 class="text-lg font-semibold mb-4 text-center">Model Performance Comparison</h3>
-                    <div style="height: 400px;">
-                        <!-- Replaced the div with a canvas for Chart.js -->
-                        <canvas id="performance-chart"></canvas>
-                    </div>
-                </div>
-            </div>
-            <figcaption>
-                Figure 3: Performance comparison across different molecular property prediction tasks. Lower values are better for LogP RMSE and Binding MAE, while higher values are better for Solubility R². GeoGAT consistently outperforms baseline methods across all metrics.
-            </figcaption>
-        </figure>
-    </div>
-    
-    <script>
-    const performanceData = [
-        {
-            name: 'LogP RMSE',
-            SchNet: 0.34,
-            DimeNet: 0.28,
-            StandardGAT: 0.31,
-            GeoGAT: 0.20,
-        },
-        {
-            name: 'Solubility R²',
-            SchNet: 0.87,
-            DimeNet: 0.89,
-            StandardGAT: 0.88,
-            GeoGAT: 0.94,
-        },
-        {
-            name: 'Binding MAE',
-            SchNet: 0.58,
-            DimeNet: 0.52,
-            StandardGAT: 0.55,
-            GeoGAT: 0.42,
-        }
-    ];
-    
-    if (typeof Chart !== 'undefined') {
-        const ctx = document.getElementById('performance-chart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: performanceData.map(d => d.name),
-                datasets: [
-                    {
-                        label: 'SchNet',
-                        data: performanceData.map(d => d.SchNet),
-                        backgroundColor: '#8884d8'
-                    },
-                    {
-                        label: 'DimeNet',
-                        data: performanceData.map(d => d.DimeNet),
-                        backgroundColor: '#82ca9d'
-                    },
-                    {
-                        label: 'StandardGAT',
-                        data: performanceData.map(d => d.StandardGAT),
-                        backgroundColor: '#ffc658'
-                    },
-                    {
-                        label: 'GeoGAT',
-                        data: performanceData.map(d => d.GeoGAT),
-                        backgroundColor: '#ff7300'
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
+  <style>
+    body{
+      font-family: system-ui, -apple-system, sans-serif;
+      line-height: 1.65;
+      max-width: 1020px;
+      margin: 0 auto;
+      padding: 26px;
+      color: #111827;
+      background: #ffffff;
     }
-    </script>
+    h1, h2, h3{
+      color: #1f2937;
+      margin-top: 1.4em;
+      line-height: 1.25;
+    }
+    p{ margin: 0.9em 0; }
+    a{ color: #1d4ed8; }
+    code{
+      background: #f3f4f6;
+      padding: 0.15em 0.35em;
+      border-radius: 4px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.95em;
+    }
+    pre{
+      background: #f3f4f6;
+      padding: 1em;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 1em 0;
+    }
+    .abstract{
+      margin: 1.6em 0;
+      padding: 1.1em 1.2em;
+      background: #f8f9fa;
+      border-left: 4px solid #1f2937;
+    }
+    .meta{
+      margin-top: 0.7em;
+      color: #4b5563;
+      font-size: 0.95em;
+    }
+    .badge{
+      display: inline-block;
+      font-size: 12px;
+      color: #374151;
+      background: #eef2ff;
+      border: 1px solid #e5e7eb;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin: 0 6px 6px 0;
+    }
+    .equation{ margin: 1em 0; text-align: center; }
+    figure{ margin: 1.4em 0; padding: 0; }
+    figcaption{ margin-top: 0.65em; font-style: italic; color: #6b7280; }
+    .panel{
+      background: #f8f9fa;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin: 1.1em 0;
+    }
+    table{
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1em 0;
+      font-size: 0.98em;
+    }
+    th, td{
+      border: 1px solid #e5e7eb;
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th{ background: #f8f9fa; }
+    ul{ margin: 0.5em 0 0.9em 1.15em; }
+    li{ margin: 0.3em 0; }
+    .grid{
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin: 0.9em 0;
+    }
+    @media (min-width: 900px){
+      .grid{ grid-template-columns: 1fr 1fr; }
+    }
+    .svg-wrap{
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 10px;
+      background: #ffffff;
+      overflow-x: auto;
+    }
+    .small{
+      color: #6b7280;
+      font-size: 12px;
+      margin-top: 1.4em;
+    }
+    .hr{
+      height: 1px;
+      background: #e5e7eb;
+      margin: 1.4em 0;
+      border: 0;
+    }
+    .img-grid{
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin: 1em 0;
+    }
+    @media (min-width: 900px){
+      .img-grid{ grid-template-columns: 1fr 1fr 1fr; }
+    }
+    .img-card{
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      background: #ffffff;
+      padding: 10px;
+    }
+    .img-card img{
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      display: block;
+    }
+    .img-title{
+      margin: 0.6em 0 0.4em 0;
+      font-weight: 600;
+      color: #111827;
+      font-size: 13px;
+    }
+    .muted{ color: #6b7280; }
+  </style>
 
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      }
+    };
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+  <h1>GeoGAT: Geometry-Aware Graph Attention for Molecular Property Prediction</h1>
+
+  <div class="abstract">
     <p>
-        The inclusion of geometric and quantum features proves crucial for performance. Through ablation studies, we find that removing geometric features increases MAE by 21%, while removing quantum features leads to a 14% performance degradation. The global context supernode contributes a 17% improvement in prediction accuracy, with its impact most pronounced in molecules containing multiple functional groups or extended conjugated systems.
+      <strong>Abstract.</strong>
+      GeoGAT is a molecular graph model that combines three sources of information: bonded connectivity, 3D geometry, and simple electronic descriptors.
+      The network uses attention on sparse molecular graphs and a global context node that exchanges messages with all atoms.
+      Geometry enters the attention logits through invariant pair and angle features.
+      The context node carries long-range signals that are hard to capture with purely local message passing.
+      This page describes the data pipeline, model equations, training objectives, and an evaluation protocol suitable for QM9-style property regression and protein-ligand affinity prediction.
     </p>
-
-    <h3>4.2 Attention Pattern Analysis</h3>
-
-    <p>
-        Beyond raw performance metrics, GeoGAT provides interpretable insights through its attention patterns. Figure 4 visualizes attention weights for different prediction tasks, revealing chemically meaningful patterns that align with established chemical knowledge.
-    </p>
-
-    <figure style="margin: 2em 0; text-align: center; font-family: system-ui, -apple-system, sans-serif; color: #1a1a1a;">
-        <h3 style="color: #2c3e50; margin-bottom: 1em;">Figure 4: Attention-Based Interpretations of Molecular Properties</h3>
-        <p style="max-width: 800px; margin: 0 auto 2em auto; font-size: 14px; line-height: 1.5; text-align: left;">
-            This figure illustrates how GeoGAT’s attention mechanism highlights chemically 
-            meaningful regions of molecules under three distinct property prediction tasks: 
-            LogP, Solubility, and Binding Affinity. Each panel shows a 2D molecular depiction 
-            overlaid with a color-coded attention map. Darker reds represent higher attention 
-            weights, while lighter shades indicate lower attention, guiding the viewer to 
-            functionally significant motifs. These patterns are fully learned by the model, 
-            reflecting underlying chemical principles without explicit domain-specific rules.
-        </p>
-        
-        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 30px;">
-    
-            <!-- Panel A: LogP Prediction -->
-            <div style="background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; width: 260px; padding: 15px;">
-                <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 16px;">(A) LogP Prediction</h4>
-                <img src="images/gat/graph_logp.png" alt="LogP Attention Visualization" style="border: 1px solid #ccc; border-radius: 4px; max-width: 100%; margin-bottom: 10px;">
-                <p style="font-size: 12px; text-align: left; margin: 0;">
-                    The model concentrates attention on hydrophobic and aromatic regions (e.g., 
-                    phenyl rings, alkyl chains), echoing established knowledge that lipophilic 
-                    domains strongly influence partition coefficients.
-                </p>
-            </div>
-    
-            <!-- Panel B: Solubility Prediction -->
-            <div style="background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; width: 260px; padding: 15px;">
-                <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 16px;">(B) Solubility Prediction</h4>
-                <img src="images/gat/graph_solubility.png" alt="Solubility Attention Visualization" style="border: 1px solid #ccc; border-radius: 4px; max-width: 100%; margin-bottom: 10px;">
-                <p style="font-size: 12px; text-align: left; margin: 0;">
-                    Attention centers on hydrogen bond donors and acceptors, polar functional groups, 
-                    and charged substituents. This aligns with the chemical understanding that 
-                    hydrophilic sites and intermolecular interactions modulate solubility.
-                </p>
-            </div>
-    
-            <!-- Panel C: Binding Affinity Prediction -->
-            <div style="background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; width: 260px; padding: 15px;">
-                <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 16px;">(C) Binding Affinity Prediction</h4>
-                <img src="images/gat/graph_binding.png" alt="Binding Affinity Attention Visualization" style="border: 1px solid #ccc; border-radius: 4px; max-width: 100%; margin-bottom: 10px;">
-                <p style="font-size: 12px; text-align: left; margin: 0;">
-                    Regions that would likely interact with a protein receptor surface show elevated 
-                    attention. Aromatic moieties for π-π stacking, hydrogen bonding sites, and 
-                    charged centers indicative of ionic interactions are emphasized, reflecting 
-                    the model’s capacity to infer key structure-activity relationships.
-                </p>
-            </div>
-        </div>
-    
-        <!-- Attention Color Scale -->
-        <div style="margin-top: 2em;">
-            <p style="font-size: 12px; text-align: center; margin: 0 0 5px 0;">
-                Attention Weight Scale
-            </p>
-            <div style="display: inline-block; height: 12px; width: 200px; background: linear-gradient(to right, #ffe0e0, #ff0000); border: 1px solid #ccc; border-radius: 4px;"></div>
-            <p style="font-size: 12px; text-align: center; margin-top: 5px; color: #666;">
-                Low Attention &nbsp; ← &nbsp;→ &nbsp; High Attention
-            </p>
-        </div>
-    
-        <figcaption style="font-style: italic; color: #666; margin-top: 1em; font-size: 13px; line-height: 1.4; max-width: 800px; margin-left: auto; margin-right: auto;">
-            Figure 3: Representative attention patterns extracted from GeoGAT for different property prediction tasks. Each panel 
-            depicts a molecule’s 2D structure overlaid with attention intensities. The model’s internal focus aligns with 
-            established chemical concepts, providing interpretable insights that can guide molecular design strategies.
-        </figcaption>
-    </figure>
-    
-    <p>
-        For LogP prediction, the attention mechanism consistently highlights hydrophobic regions and aromatic systems, with particularly strong weights assigned to alkyl chains and phenyl rings. In solubility predictions, attention patterns focus on hydrogen bond donors and acceptors, demonstrating the model's ability to identify key functional groups governing molecular properties. The binding affinity predictions show concentrated attention at protein-ligand interface regions, with the supernode attention weights revealing long-range electronic effects that influence binding behavior.
-    </p>
-
-    <h3>4.3 Case Study: Drug-Like Molecules</h3>
-
-    <p>
-        To validate GeoGAT's practical utility, we conducted detailed analyses of FDA-approved drugs. Taking ibuprofen as an example, our model correctly identifies the carboxylic acid group as crucial for both solubility and binding activity, with attention weights of 0.82 and 0.75, respectively. The phenyl ring receives strong attention (0.79) in LogP prediction, while the branched alkyl region shows moderate attention (0.45-0.60) across all properties, aligned with its known contribution to pharmaceutical properties.
-    </p>
-
-    <p>
-        More broadly, analysis across our test set reveals that GeoGAT successfully captures key pharmacophoric elements in 92% of cases, as verified against established crystallographic and biochemical data. This suggests that the model not only provides accurate predictions but also learns chemically relevant features that can guide drug design decisions.
-    </p>
-
-
-
-    <script>
-        MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']]
-            }
-        };
-    </script>
-
-
-    <h2>5. Extension to Protein-Ligand Interactions: Integration with AlphaFold and ESM</h2>
-    
-    <h3>5.1 Cloud-Native Architecture for Structural Predictions</h3>
-    
-    <p>
-        We extend GeoGAT's capabilities by implementing a cloud-native pipeline that integrates protein structure prediction (AlphaFold2) and protein language models (ESM-2) with our geometric attention framework. This integration enables comprehensive analysis of protein-ligand interactions while maintaining computational efficiency through AWS's distributed computing infrastructure. Figure 5 illustrates our extended architecture.
-    </p>
-    
-    <figure>
-        <div class="mermaid">
-            flowchart TB
-                subgraph Input["Input Processing"]
-                    A[Ligand SMILES] --> B[GeoGAT Features]
-                    C[Protein Sequence] --> D[ESM-2 Embeddings]
-                    C --> E[AlphaFold2 Structure]
-                end
-    
-                subgraph Compute["AWS Compute Layer"]
-                    F[ECS Container 1<br/>GeoGAT] --> J[Feature Fusion]
-                    G[ECS Container 2<br/>ESM-2] --> J
-                    H[Batch Job<br/>AlphaFold2] --> J
-                    J --> K[Integrated<br/>Prediction Model]
-                end
-    
-                subgraph Storage["Storage Layer"]
-                    L[(S3 Feature Store)]
-                    M[(DynamoDB Cache)]
-                    N[(EFS Shared Storage)]
-                end
-    
-                B --> F
-                D --> G
-                E --> H
-                K --> O[Binding Site<br/>Prediction]
-                K --> P[Affinity<br/>Estimation]
-                K --> Q[Interaction<br/>Analysis]
-    
-                L <--> Compute
-                M <--> Compute
-                N <--> Compute
-        </div>
-        <figcaption>
-            Figure 5: System architecture showing the integration of GeoGAT with AlphaFold2 and ESM-2 on AWS infrastructure.
-            The pipeline supports high-throughput protein-ligand interaction analysis through distributed computing.
-        </figcaption>
-    </figure>
-    
-    <p>
-        Our implementation leverages AWS Elastic Container Service (ECS) to orchestrate three primary computational components: GeoGAT for ligand analysis, ESM-2 for protein sequence embeddings, and AlphaFold2 for structure prediction. The system employs a tiered storage architecture with S3 for persistent storage, DynamoDB for caching intermediate results, and EFS for shared computational storage. This design ensures efficient handling of large-scale protein-ligand interaction predictions while maintaining low latency for real-time applications.
-    </p>
-    
-    <h3>5.2 Integration of Protein Language Models</h3>
-    
-    <p>
-        We enhance GeoGAT's molecular understanding by incorporating protein language model embeddings from ESM-2. For each protein sequence \(\mathbf{S} = (s_1, ..., s_n)\), we compute per-residue embeddings \(\mathbf{E} = \text{ESM-2}(\mathbf{S}) \in \mathbb{R}^{n \times d}\), where d=1280 is the embedding dimension. These embeddings capture evolutionary and functional information about each residue, which we integrate into our attention mechanism through a cross-modal attention layer:
-    </p>
-    
-    <div class="equation">
-        $$\alpha_{ij}^{\text{cross}} = \text{softmax}_j\left(\frac{(\mathbf{W}_Q\mathbf{h}_i)^\top(\mathbf{W}_K\mathbf{E}_j)}{\sqrt{d}} + \beta_{ij}(\mathbf{g}_i, \mathbf{p}_j)\right)$$
+    <div class="meta">
+      <span class="badge">molecular graphs</span>
+      <span class="badge">3D geometry</span>
+      <span class="badge">graph attention</span>
+      <span class="badge">context node</span>
+      <span class="badge">interpretability</span>
     </div>
-    
-    <p>
-        where \(\mathbf{p}_j\) represents the 3D coordinates of protein residue j obtained from AlphaFold2 predictions, and \(\beta_{ij}\) is a learned geometric bias term that incorporates spatial relationships between ligand atoms and protein residues. This cross-modal attention enables direct modeling of protein-ligand interactions while preserving the geometric awareness of our original architecture.
-    </p>
-    
-    <h3>5.3 Structural Integration with AlphaFold</h3>
-    
-    <p>
-        We implement a custom AWS Batch processing pipeline for AlphaFold2 structure prediction, optimized for high-throughput analysis. The pipeline includes:
-    </p>
-    
-    <ol>
-        <li>A preprocessing stage that filters sequences for quality and completeness</li>
-        <li>Parallel execution of multiple AlphaFold2 instances across GPU-enabled EC2 instances</li>
-        <li>Post-processing to extract confidence metrics and relevant structural features</li>
-    </ol>
-    
-    <p>
-        The predicted structures provide crucial spatial information that we incorporate into our geometric attention mechanism through a modified distance-aware attention term:
-    </p>
-    
-    <div class="equation">
-        $$\gamma_{ij}^{\text{struct}}(\mathbf{g}_i, \mathbf{p}_j) = \text{MLP}_{\text{struct}}\left([\|\mathbf{r}_{ij}\|_2 \| \text{pLDDT}_j \| \phi_{ij}]\right)$$
+  </div>
+
+  <h2>1. Problem</h2>
+  <p>
+    Molecular properties depend on local chemistry and on spatial structure.
+    A model that only sees the bond graph cannot distinguish conformers with the same connectivity.
+    A model that only sees geometry may miss discrete chemical constraints encoded by bonds and valence.
+    GeoGAT uses a graph representation augmented with geometric and electronic features, while keeping the computation sparse and scalable.
+  </p>
+
+  <h2>2. Data and preprocessing</h2>
+
+  <h3>2.1 Molecular graph construction</h3>
+  <p>
+    Input molecules start from SMILES.
+    RDKit-style sanitization provides a canonical graph $G=(V,E)$ with atoms $V$ and bonds $E$.
+    Each atom $i$ receives a feature vector $x_i$ (element, degree, formal charge, aromaticity, hybridization).
+    Each bond $(i,j)$ receives a feature vector $b_{ij}$ (bond type, conjugation, ring membership).
+  </p>
+
+  <h3>2.2 3D geometry</h3>
+  <p>
+    A conformer generator produces Cartesian coordinates $p_i \in \mathbb{R}^3$ for each atom.
+    GeoGAT uses rotation and translation invariant functions of these coordinates.
+    For a bond $(i,j)$, the model uses the distance $d_{ij}=\|p_i-p_j\|_2$.
+    For triples and quadruples, the model can use bond angles and dihedrals when available:
+    $$\angle_{ijk}, \quad \phi_{ijkl}.$$
+  </p>
+  <p>
+    Conformer ensembles reduce sensitivity to a single geometry.
+    A practical choice averages predictions over a small set of low-energy conformers, or trains with random conformers per epoch.
+  </p>
+
+  <h3>2.3 Electronic descriptors</h3>
+  <p>
+    The input can include cheap electronic features such as partial charges and atom-wise electronegativity proxies.
+    If quantum features are used, they should be computed with a fixed protocol and cached.
+    The model treats these features as additional channels in the atom embedding.
+  </p>
+
+  <h3>2.4 Splits and evaluation</h3>
+  <p>
+    Molecular benchmarks are sensitive to the split.
+    Scaffold splits group molecules by core substructure and prevent leakage from close analogs.
+    For protein-ligand tasks, splits should separate proteins or families to test generalization across targets.
+  </p>
+
+  <h2>3. Model</h2>
+
+  <h3>3.1 Architecture</h3>
+  <figure>
+    <div class="svg-wrap">
+      <svg viewBox="0 0 980 240" width="100%" height="240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GeoGAT architecture diagram">
+        <rect x="0" y="0" width="980" height="240" fill="#ffffff"/>
+
+        <!-- Blocks -->
+        <g font-family="system-ui, -apple-system, sans-serif">
+          <rect x="40" y="60" width="190" height="90" rx="12" fill="#ffffff" stroke="#d1d5db" stroke-width="2"/>
+          <text x="135" y="92" text-anchor="middle" font-size="13" fill="#111827">Inputs</text>
+          <text x="135" y="114" text-anchor="middle" font-size="12" fill="#6b7280">atom features</text>
+          <text x="135" y="134" text-anchor="middle" font-size="12" fill="#6b7280">bond features</text>
+          <text x="135" y="154" text-anchor="middle" font-size="12" fill="#6b7280">geometry</text>
+
+          <rect x="280" y="60" width="190" height="90" rx="12" fill="#ffffff" stroke="#d1d5db" stroke-width="2"/>
+          <text x="375" y="92" text-anchor="middle" font-size="13" fill="#111827">Embedding</text>
+          <text x="375" y="114" text-anchor="middle" font-size="12" fill="#6b7280">MLP projection</text>
+          <text x="375" y="134" text-anchor="middle" font-size="12" fill="#6b7280">feature fusion</text>
+
+          <rect x="520" y="45" width="210" height="120" rx="12" fill="#eef2ff" stroke="#90caf9" stroke-width="2"/>
+          <text x="625" y="78" text-anchor="middle" font-size="13" fill="#111827">Graph attention</text>
+          <text x="625" y="100" text-anchor="middle" font-size="12" fill="#6b7280">sparse edges</text>
+          <text x="625" y="120" text-anchor="middle" font-size="12" fill="#6b7280">geometric bias</text>
+          <text x="625" y="140" text-anchor="middle" font-size="12" fill="#6b7280">L layers</text>
+
+          <rect x="770" y="60" width="170" height="90" rx="12" fill="#ffffff" stroke="#d1d5db" stroke-width="2"/>
+          <text x="855" y="92" text-anchor="middle" font-size="13" fill="#111827">Readout</text>
+          <text x="855" y="114" text-anchor="middle" font-size="12" fill="#6b7280">pool + MLP</text>
+          <text x="855" y="134" text-anchor="middle" font-size="12" fill="#6b7280">property</text>
+
+          <!-- Context node -->
+          <rect x="520" y="175" width="210" height="45" rx="12" fill="#fff7ed" stroke="#fdba74" stroke-width="2"/>
+          <text x="625" y="203" text-anchor="middle" font-size="12" fill="#111827">global context node</text>
+
+          <!-- Arrows -->
+          <g stroke="#6b7280" stroke-width="2" fill="none">
+            <path d="M230,105 L280,105"/>
+            <path d="M470,105 L520,105"/>
+            <path d="M730,105 L770,105"/>
+            <path d="M625,165 L625,175"/>
+          </g>
+
+          <!-- Bidirectional dashed links -->
+          <g stroke="#fdba74" stroke-width="2" stroke-dasharray="5,5" fill="none">
+            <path d="M520,195 C450,195 420,155 400,150"/>
+            <path d="M730,195 C800,195 860,160 855,150"/>
+          </g>
+
+          <text x="625" y="232" text-anchor="middle" font-size="11" fill="#6b7280">
+            Figure 1. Sparse attention layers with a context node connected to all atoms.
+          </text>
+        </g>
+      </svg>
     </div>
-    
-    <p>
-        where \(\text{pLDDT}_j\) is AlphaFold2's predicted Local Distance Difference Test score for residue j, and \(\phi_{ij}\) represents the torsion angles between ligand atom i and protein residue j.
-    </p>
-    
-    
-    <p>
-        The integrated system demonstrates significant improvements in protein-ligand interaction prediction, achieving:
-    </p>
-    
-    <ul>
-        <li>34% reduction in binding site prediction error compared to traditional docking approaches</li>
-        <li>42% improvement in binding affinity estimation accuracy</li>
-        <li>89% success rate in identifying key protein-ligand contacts, validated against crystallographic data</li>
-    </ul>
-    
-    <p>
-        Notably, our AWS implementation scales efficiently with increasing workload. The system maintains sub-minute latency for single protein-ligand pairs while supporting batch processing of up to 1000 combinations per hour through automatically scaling ECS tasks.
-    </p>
+    <figcaption>
+      Figure 1. Overview of GeoGAT. Geometry influences attention through invariant features. A context node carries global signals.
+    </figcaption>
+  </figure>
 
+  <h3>3.2 Atom embedding</h3>
+  <p>
+    Each atom $v$ receives an initial embedding $h_v^{(0)}$ from the concatenation of atom features, electronic features, and local geometric descriptors.
+    $$h_v^{(0)} = \mathrm{MLP}_{\mathrm{emb}}\left([x_v \| q_v \| g_v]\right).$$
+  </p>
 
+  <h3>3.3 Geometric attention with sparse edges</h3>
+  <p>
+    GeoGAT computes attention on graph edges.
+    For layer $\ell$ and head $k$, the attention weight from atom $i$ to atom $j$ is
+  </p>
 
-    <h2>6. Conclusion and Future Directions</h2>
+  <div class="equation">
+    $$\alpha_{ij}^{(\ell,k)} = \mathrm{softmax}_j\left(\frac{(W_Q^{(\ell,k)} h_i^{(\ell)})^{\top}(W_K^{(\ell,k)} h_j^{(\ell)})}{\sqrt{d_k}} + \gamma_{ij}\right).$$
+  </div>
 
-    <p>
-        In this work, we presented GeoGAT, a geometric graph attention network that advances molecular property prediction by bridging the gap between topological graph structure and three-dimensional geometric reality. Our approach demonstrates that explicitly incorporating geometric information through specialized attention mechanisms and a global context supernode significantly improves our ability to capture complex molecular behaviors. The 27% improvement in binding affinity prediction and 0.94 R² for solubility estimation validate our core premise: preserving and exploiting geometric information leads to richer, more predictive molecular representations.
-    </p>
-    
-    <p>
-        The success of GeoGAT's geometric attention mechanism highlights the importance of spatial awareness in molecular modeling. Unlike traditional graph neural networks that rely solely on connectivity patterns, our approach captures the subtle interplay between molecular geometry and electronic structure. The attention patterns learned by our model reveal chemically meaningful insights, identifying spatial arrangements of functional groups and reactive centers that align with established chemical understanding. This interpretability, coupled with state-of-the-art performance, suggests that our geometric approach better approximates how chemists actually reason about molecular structure and reactivity.
-    </p>
-    
-    <p>
-        A key theoretical contribution of our work lies in developing geometrically-aware attention mechanisms that respect molecular symmetries. By designing our feature representations and attention computations to be invariant under rotations and translations, we ensure that our model captures intrinsic molecular properties rather than arbitrary spatial orientations. The global context supernode further enhances this geometric understanding by aggregating and propagating spatial information across the entire molecule, enabling the model to capture long-range geometric effects that traditional local message-passing approaches might miss.
-    </p>
-    
-    <p>
-        The integration with cloud infrastructure and modern protein structure prediction tools demonstrates the practical scalability of our approach. However, several exciting directions remain for future exploration. First, extending our geometric attention mechanism to handle larger biomolecular systems, particularly protein-protein interactions, could provide valuable insights for drug discovery. Second, incorporating time-dependent geometric features could enable modeling of molecular dynamics and conformational changes. Finally, exploring the connection between geometric attention patterns and quantum mechanical phenomena could deepen our understanding of structure-property relationships.
-    </p>
-    
-    <p>
-        GeoGAT represents a significant step toward more realistic and interpretable molecular modeling. By combining the expressivity of graph neural networks with principled geometric deep learning approaches, we have created a framework that not only achieves superior predictive performance but also provides chemically meaningful insights. As the field of geometric deep learning continues to evolve, we believe this integration of spatial and topological information will become increasingly crucial for advancing our understanding of molecular systems and accelerating the discovery of new materials and therapeutics.
-    </p>
+  <p>
+    The geometric bias $\gamma_{ij}$ is a learned function of invariant geometry and bond features.
+    A simple choice uses distance and optional angular terms:
+  </p>
 
+  <div class="equation">
+    $$\gamma_{ij} = \mathrm{MLP}_{\mathrm{geo}}\left([b_{ij} \| d_{ij} \| \angle_{ijk} \| \phi_{ijkl}]\right).$$
+  </div>
 
+  <p>
+    The layer output follows standard attention aggregation:
+    $$h_i^{(\ell+1)} = \sum_{k} \sum_{j \in \mathcal{N}(i)} \alpha_{ij}^{(\ell,k)} \, W_V^{(\ell,k)} h_j^{(\ell)},$$
+    followed by residual connections and normalization.
+  </p>
 
-<h2>References</h2>
-<div class="references" style="padding-left: 2em; text-indent: -2em;">
+  <h3>3.4 Global context node</h3>
+  <p>
+    The context node $s$ exchanges messages with all atoms at each layer.
+    It provides a global summary and enables long-range interactions without dense all-pairs attention on atoms.
+    One update uses two attention steps:
+  </p>
+
+  <div class="equation">
+    $$h_s^{(\ell+1)} = \mathrm{Attn}(h_s^{(\ell)}, \{h_v^{(\ell)}\}_{v\in V}), \quad
+      h_v^{(\ell+1)} \leftarrow h_v^{(\ell+1)} + \mathrm{Attn}(h_v^{(\ell)}, \{h_s^{(\ell)}\}).$$
+  </div>
+
+  <p>
+    This adds $O(|V|)$ interactions per layer for the context node, while the atom-to-atom computation stays sparse over edges.
+  </p>
+
+  <h3>3.5 Readout</h3>
+  <p>
+    For graph-level prediction, GeoGAT combines the context node and a pooled atom representation:
+  </p>
+  <div class="equation">
+    $$\hat{y} = \mathrm{MLP}_{\mathrm{pred}}\left([h_s^{(L)} \| \mathrm{Pool}(\{h_v^{(L)}\})]\right).$$
+  </div>
+
+  <h2>4. Training objective</h2>
+  <p>
+    The primary loss depends on the task, such as mean squared error for regression or binary cross entropy for classification.
+    Auxiliary losses can improve geometric consistency when training uses 3D conformers.
+    Two simple auxiliary targets are distance reconstruction on edges and angle reconstruction on triples.
+  </p>
+
+  <div class="equation">
+    $$\mathcal{L} = \mathcal{L}_{\mathrm{task}} + \lambda_d \mathcal{L}_{\mathrm{dist}} + \lambda_a \mathcal{L}_{\mathrm{angle}}.$$
+  </div>
+
+  <div class="panel">
     <p>
-        Gilmer, J., Schoenholz, S. S., Riley, P. F., Vinyals, O., & Dahl, G. E. (2017). Neural message passing for quantum chemistry. In International Conference on Machine Learning (pp. 1263-1272).
+      <strong>Invariance.</strong>
+      Distances, angles, and dihedrals are invariant under global rotations and translations.
+      Using these quantities avoids dependence on an arbitrary coordinate frame.
+      If local frames are introduced, the design should preserve the desired invariances by construction.
+    </p>
+  </div>
+
+  <h2>5. Experimental protocol</h2>
+  <p>
+    A protocol that supports fair comparisons includes the split, the metric, and a fixed preprocessing pipeline.
+    The following setup is typical for molecular regression.
+  </p>
+
+  <div class="grid">
+    <div class="panel">
+      <p><strong>Datasets.</strong></p>
+      <ul>
+        <li>QM9 for small-molecule quantum properties.</li>
+        <li>ESOL and FreeSolv for solubility-style targets.</li>
+        <li>PDBbind for protein-ligand affinity, with protein-level splits.</li>
+        <li>A curated ChEMBL subset for target-specific activity.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <p><strong>Metrics.</strong></p>
+      <ul>
+        <li>RMSE or MAE for regression tasks.</li>
+        <li>$R^2$ for explained variance on solubility-style targets.</li>
+        <li>Spearman correlation for ranking settings.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>6. Results snapshot</h2>
+  <p>
+    The table below illustrates how results can be reported across tasks.
+    Replace these values with your run logs and keep the split fixed across baselines.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Task metric</th>
+        <th>SchNet</th>
+        <th>DimeNet++</th>
+        <th>Standard GAT</th>
+        <th>GeoGAT</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>LogP RMSE (lower is better)</td>
+        <td>0.34</td>
+        <td>0.28</td>
+        <td>0.31</td>
+        <td><strong>0.20</strong></td>
+      </tr>
+      <tr>
+        <td>Solubility $R^2$ (higher is better)</td>
+        <td>0.87</td>
+        <td>0.89</td>
+        <td>0.88</td>
+        <td><strong>0.94</strong></td>
+      </tr>
+      <tr>
+        <td>Binding MAE (lower is better)</td>
+        <td>0.58</td>
+        <td>0.52</td>
+        <td>0.55</td>
+        <td><strong>0.42</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <figure>
+    <div class="svg-wrap">
+      <svg viewBox="0 0 980 340" width="100%" height="340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GeoGAT performance charts">
+        <rect x="0" y="0" width="980" height="340" fill="#ffffff"/>
+        <text x="160" y="28" text-anchor="middle" font-size="13" fill="#111827">LogP RMSE</text>
+        <text x="490" y="28" text-anchor="middle" font-size="13" fill="#111827">Solubility R2</text>
+        <text x="820" y="28" text-anchor="middle" font-size="13" fill="#111827">Binding MAE</text>
+
+        <!-- panel frames -->
+        <rect x="40" y="45" width="240" height="250" rx="10" fill="#ffffff" stroke="#e5e7eb"/>
+        <rect x="370" y="45" width="240" height="250" rx="10" fill="#ffffff" stroke="#e5e7eb"/>
+        <rect x="700" y="45" width="240" height="250" rx="10" fill="#ffffff" stroke="#e5e7eb"/>
+
+        <!-- helper: bars are scaled within each panel -->
+        <!-- RMSE: higher bar = worse, so plot inverted (lower is better). Scale min=0.18 max=0.36 -->
+        <!-- y = 275 - (value-min)/(max-min)*200 -->
+        <g>
+          <!-- RMSE axis -->
+          <text x="55" y="265" font-size="10" fill="#6b7280">0.18</text>
+          <text x="55" y="75" font-size="10" fill="#6b7280">0.36</text>
+          <line x1="70" y1="245" x2="70" y2="75" stroke="#9ca3af"/>
+          <line x1="70" y1="245" x2="260" y2="245" stroke="#9ca3af"/>
+
+          <!-- bars -->
+          <!-- values: 0.34,0.28,0.31,0.20 -->
+          <rect x="92"  y="97.2" width="35" height="147.8" fill="#bfdbfe" stroke="#1d4ed8"/>
+          <rect x="137" y="163.9" width="35" height="81.1" fill="#bfdbfe" stroke="#1d4ed8"/>
+          <rect x="182" y="130.6" width="35" height="114.4" fill="#bfdbfe" stroke="#1d4ed8"/>
+          <rect x="227" y="230.6" width="35" height="14.4" fill="#93c5fd" stroke="#1d4ed8"/>
+
+          <g font-size="10" fill="#111827">
+            <text x="109.5" y="308" text-anchor="middle">SchNet</text>
+            <text x="154.5" y="308" text-anchor="middle">DimeNet</text>
+            <text x="199.5" y="308" text-anchor="middle">GAT</text>
+            <text x="244.5" y="308" text-anchor="middle">GeoGAT</text>
+
+            <text x="109.5" y="92" text-anchor="middle">0.34</text>
+            <text x="154.5" y="159" text-anchor="middle">0.28</text>
+            <text x="199.5" y="126" text-anchor="middle">0.31</text>
+            <text x="244.5" y="226" text-anchor="middle">0.20</text>
+          </g>
+          <text x="165" y="62" text-anchor="middle" font-size="10" fill="#6b7280">lower is better</text>
+        </g>
+
+        <!-- R2: higher is better. Scale min=0.85 max=0.95 -->
+        <g>
+          <text x="385" y="265" font-size="10" fill="#6b7280">0.85</text>
+          <text x="385" y="75" font-size="10" fill="#6b7280">0.95</text>
+          <line x1="400" y1="245" x2="400" y2="75" stroke="#9ca3af"/>
+          <line x1="400" y1="245" x2="590" y2="245" stroke="#9ca3af"/>
+
+          <!-- y = 245 - (value-min)/(max-min)*170 -->
+          <!-- values: 0.87,0.89,0.88,0.94 -->
+          <rect x="422" y="211" width="35" height="34" fill="#d1fae5" stroke="#047857"/>
+          <rect x="467" y="177" width="35" height="68" fill="#d1fae5" stroke="#047857"/>
+          <rect x="512" y="194" width="35" height="51" fill="#d1fae5" stroke="#047857"/>
+          <rect x="557" y="92"  width="35" height="153" fill="#a7f3d0" stroke="#047857"/>
+
+          <g font-size="10" fill="#111827">
+            <text x="439.5" y="308" text-anchor="middle">SchNet</text>
+            <text x="484.5" y="308" text-anchor="middle">DimeNet</text>
+            <text x="529.5" y="308" text-anchor="middle">GAT</text>
+            <text x="574.5" y="308" text-anchor="middle">GeoGAT</text>
+
+            <text x="439.5" y="206" text-anchor="middle">0.87</text>
+            <text x="484.5" y="172" text-anchor="middle">0.89</text>
+            <text x="529.5" y="189" text-anchor="middle">0.88</text>
+            <text x="574.5" y="87"  text-anchor="middle">0.94</text>
+          </g>
+          <text x="490" y="62" text-anchor="middle" font-size="10" fill="#6b7280">higher is better</text>
+        </g>
+
+        <!-- MAE: lower is better. Scale min=0.40 max=0.60 -->
+        <g>
+          <text x="715" y="265" font-size="10" fill="#6b7280">0.40</text>
+          <text x="715" y="75" font-size="10" fill="#6b7280">0.60</text>
+          <line x1="730" y1="245" x2="730" y2="75" stroke="#9ca3af"/>
+          <line x1="730" y1="245" x2="920" y2="245" stroke="#9ca3af"/>
+
+          <!-- y = 245 - (value-min)/(max-min)*170 -->
+          <!-- values: 0.58,0.52,0.55,0.42 -->
+          <rect x="752" y="92"  width="35" height="153" fill="#fde68a" stroke="#b45309"/>
+          <rect x="797" y="143" width="35" height="102" fill="#fde68a" stroke="#b45309"/>
+          <rect x="842" y="117.5" width="35" height="127.5" fill="#fde68a" stroke="#b45309"/>
+          <rect x="887" y="219.5" width="35" height="25.5" fill="#fcd34d" stroke="#b45309"/>
+
+          <g font-size="10" fill="#111827">
+            <text x="769.5" y="308" text-anchor="middle">SchNet</text>
+            <text x="814.5" y="308" text-anchor="middle">DimeNet</text>
+            <text x="859.5" y="308" text-anchor="middle">GAT</text>
+            <text x="904.5" y="308" text-anchor="middle">GeoGAT</text>
+
+            <text x="769.5" y="87"  text-anchor="middle">0.58</text>
+            <text x="814.5" y="138" text-anchor="middle">0.52</text>
+            <text x="859.5" y="112" text-anchor="middle">0.55</text>
+            <text x="904.5" y="214" text-anchor="middle">0.42</text>
+          </g>
+          <text x="820" y="62" text-anchor="middle" font-size="10" fill="#6b7280">lower is better</text>
+        </g>
+
+        <text x="490" y="330" text-anchor="middle" font-size="11" fill="#6b7280">
+          Figure 2. Fixed-size SVG charts avoid layout issues from dynamic canvas resizing.
+        </text>
+      </svg>
+    </div>
+    <figcaption>
+      Figure 2. Example report format for cross-task evaluation. Replace values with results from a fixed split and fixed preprocessing.
+    </figcaption>
+  </figure>
+
+  <h2>7. Attention analysis</h2>
+  <p>
+    Attention weights provide a diagnostic for which parts of a molecule influence the prediction.
+    The plots below are a template for qualitative inspection.
+    Each image should show a 2D depiction with attention intensity mapped onto atoms or bonds.
+  </p>
+
+  <div class="img-grid">
+    <div class="img-card">
+      <div class="img-title">LogP</div>
+      <img src="images/gat/graph_logp.png" alt="Attention map for LogP prediction"/>
+      <p class="muted" style="margin: 0.7em 0 0 0; font-size: 12px;">
+        Common emphasis includes hydrophobic fragments and aromatic rings.
+      </p>
+    </div>
+    <div class="img-card">
+      <div class="img-title">Solubility</div>
+      <img src="images/gat/graph_solubility.png" alt="Attention map for solubility prediction"/>
+      <p class="muted" style="margin: 0.7em 0 0 0; font-size: 12px;">
+        Polar groups and hydrogen-bond sites often dominate.
+      </p>
+    </div>
+    <div class="img-card">
+      <div class="img-title">Binding affinity</div>
+      <img src="images/gat/graph_binding.png" alt="Attention map for binding affinity prediction"/>
+      <p class="muted" style="margin: 0.7em 0 0 0; font-size: 12px;">
+        Interface-like fragments should carry larger weights in complex tasks.
+      </p>
+    </div>
+  </div>
+
+  <figure>
+    <figcaption>
+      Figure 3. Template for attention visualizations. The images are external assets referenced by relative paths.
+    </figcaption>
+  </figure>
+
+  <h2>8. System extension for protein-ligand modeling</h2>
+  <p>
+    A practical protein-ligand pipeline combines three ingredients: ligand graph features, protein sequence embeddings, and a protein structure model.
+    A deployment-oriented design can run these components as separate services and cache intermediate outputs.
+  </p>
+
+  <figure>
+    <div class="svg-wrap">
+      <svg viewBox="0 0 980 300" width="100%" height="300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Protein-ligand pipeline diagram">
+        <rect x="0" y="0" width="980" height="300" fill="#ffffff"/>
+
+        <g font-family="system-ui, -apple-system, sans-serif">
+          <!-- inputs -->
+          <rect x="40" y="50" width="180" height="70" rx="12" fill="#ffffff" stroke="#d1d5db" stroke-width="2"/>
+          <text x="130" y="82" text-anchor="middle" font-size="13" fill="#111827">Ligand SMILES</text>
+
+          <rect x="40" y="150" width="180" height="70" rx="12" fill="#ffffff" stroke="#d1d5db" stroke-width="2"/>
+          <text x="130" y="182" text-anchor="middle" font-size="13" fill="#111827">Protein sequence</text>
+
+          <!-- featurizers -->
+          <rect x="270" y="50" width="200" height="70" rx="12" fill="#eef2ff" stroke="#90caf9" stroke-width="2"/>
+          <text x="370" y="82" text-anchor="middle" font-size="13" fill="#111827">GeoGAT ligand encoder</text>
+
+          <rect x="270" y="150" width="200" height="70" rx="12" fill="#eef2ff" stroke="#90caf9" stroke-width="2"/>
+          <text x="370" y="182" text-anchor="middle" font-size="13" fill="#111827">Protein LM encoder</text>
+
+          <rect x="270" y="240" width="200" height="45" rx="12" fill="#fff7ed" stroke="#fdba74" stroke-width="2"/>
+          <text x="370" y="268" text-anchor="middle" font-size="12" fill="#111827">Structure model</text>
+
+          <!-- fusion -->
+          <rect x="520" y="100" width="200" height="90" rx="12" fill="#ffffff" stroke="#d1d5db" stroke-width="2"/>
+          <text x="620" y="132" text-anchor="middle" font-size="13" fill="#111827">Feature fusion</text>
+          <text x="620" y="154" text-anchor="middle" font-size="12" fill="#6b7280">cross-attention</text>
+          <text x="620" y="174" text-anchor="middle" font-size="12" fill="#6b7280">geometry terms</text>
+
+          <!-- outputs -->
+          <rect x="770" y="100" width="170" height="90" rx="12" fill="#ffffff" stroke="#d1d5db" stroke-width="2"/>
+          <text x="855" y="132" text-anchor="middle" font-size="13" fill="#111827">Predictions</text>
+          <text x="855" y="154" text-anchor="middle" font-size="12" fill="#6b7280">site</text>
+          <text x="855" y="174" text-anchor="middle" font-size="12" fill="#6b7280">affinity</text>
+
+          <!-- arrows -->
+          <g stroke="#6b7280" stroke-width="2" fill="none">
+            <path d="M220,85 L270,85"/>
+            <path d="M220,185 L270,185"/>
+            <path d="M220,185 C235,185 240,255 270,262"/>
+
+            <path d="M470,85 C500,85 500,115 520,125"/>
+            <path d="M470,185 C500,185 500,165 520,165"/>
+            <path d="M470,262 C500,262 500,185 520,175"/>
+
+            <path d="M720,145 L770,145"/>
+          </g>
+
+          <!-- cache -->
+          <rect x="520" y="220" width="200" height="55" rx="12" fill="#f8f9fa" stroke="#e5e7eb"/>
+          <text x="620" y="248" text-anchor="middle" font-size="12" fill="#111827">cache store</text>
+
+          <g stroke="#6b7280" stroke-width="2" fill="none" stroke-dasharray="5,5">
+            <path d="M470,85 C500,85 500,235 520,245"/>
+            <path d="M470,185 C500,185 500,245 520,245"/>
+          </g>
+
+          <text x="490" y="290" text-anchor="middle" font-size="11" fill="#6b7280">
+            Figure 4. Deployment sketch. Encoders can run independently and cache their outputs.
+          </text>
+        </g>
+      </svg>
+    </div>
+    <figcaption>
+      Figure 4. System design for integrating ligand graphs, protein sequence embeddings, and a structure model.
+      The diagram is a design sketch rather than a performance claim.
+    </figcaption>
+  </figure>
+
+  <h2>9. Limitations</h2>
+  <p>
+    The model depends on conformer quality when 3D features are used.
+    Conformer mismatch can add noise, especially for flexible molecules.
+    Protein-ligand tasks require careful splits and data cleaning because many targets have strong dataset biases.
+  </p>
+
+  <hr class="hr"/>
+
+  <h2>References</h2>
+  <div class="panel">
+    <p>
+      Gilmer, J., Schoenholz, S. S., Riley, P. F., Vinyals, O., and Dahl, G. E. (2017). Neural message passing for quantum chemistry. ICML.
     </p>
     <p>
-        Klicpera, J., Groß, J., & Günnemann, S. (2020). Directional message passing for molecular graphs. International Conference on Learning Representations.
+      Klicpera, J., Groß, J., and Günnemann, S. (2020). Directional message passing for molecular graphs. ICLR.
     </p>
     <p>
-        Schütt, K. T., Sauceda, H. E., Kindermans, P. J., Tkatchenko, A., & Müller, K. R. (2018). SchNet–A deep learning architecture for molecules and materials. The Journal of Chemical Physics, 148(24), 241722.
+      Schütt, K. T., Sauceda, H. E., Kindermans, P. J., Tkatchenko, A., and Müller, K. R. (2018). SchNet: A deep learning architecture for molecules and materials. Journal of Chemical Physics.
     </p>
     <p>
-        Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., & Polosukhin, I. (2017). Attention is all you need. Advances in Neural Information Processing Systems, 30.
+      Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., and Polosukhin, I. (2017). Attention is all you need. NeurIPS.
     </p>
-    <p>
-        Xiong, Z., Wang, D., Liu, X., Zhong, F., Wan, X., Li, X., ... & Ding, K. (2019). Pushing the boundaries of molecular representation for drug discovery with the graph attention mechanism. Journal of Medicinal Chemistry, 63(16), 8749-8760.
+    <p style="margin-bottom: 0;">
+      Xiong, Z., Wang, D., Liu, X., Zhong, F., Wan, X., Li, X., and Ding, K. (2019). Pushing the boundaries of molecular representation for drug discovery with graph attention. Journal of Medicinal Chemistry.
     </p>
-</div>
+  </div>
+
+  <p class="small">
+    Notes: update dataset choices, hyperparameters, and the results table to match the exact runs in your repository.
+    Keep the evaluation split fixed when comparing against baselines.
+  </p>
 </body>
 </html>
-
