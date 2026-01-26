@@ -34,3 +34,77 @@ section {
 #experience-highlights p {
   margin-bottom: 20px;
 }
+
+/* Project Cards */
+.project-card {
+  border: 1px solid #e1e4e8;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: all 0.2s ease;
+  background: #fafbfc;
+}
+
+.project-card:hover {
+  border-color: #0366d6;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
+.project-card h5 {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.project-card h5 a {
+  color: #24292e;
+  text-decoration: none;
+}
+
+.project-card h5 a:hover {
+  color: #0366d6;
+}
+
+.project-card p {
+  margin-bottom: 0;
+  color: #586069;
+  font-size: 0.95em;
+}
+
+/* Venue Badges */
+.venue-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.75em;
+  font-weight: 600;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.venue-badge.neurips {
+  background: #7c3aed;
+  color: white;
+}
+
+.venue-badge.icml {
+  background: #059669;
+  color: white;
+}
+
+.venue-badge.nyrl {
+  background: #dc2626;
+  color: white;
+}
+
+/* Section Headers */
+.section-subtitle {
+  color: #6a737d;
+  font-size: 0.9em;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e1e4e8;
+}
