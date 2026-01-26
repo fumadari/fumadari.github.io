@@ -4,13 +4,13 @@ layout: default
 
 ## About Me
 
-Hey! I’m Dario, a Computer Science and Mathematics graduate from Washington and Lee University. Originally from a [small village in Italy](https://en.wikipedia.org/wiki/Cisternino), I’m currently a Prototype Architect at Amazon Web Services in New York City, crafting large-scale AI solutions that harness the cloud to handle massive datasets.
+Hey! I'm Dario, a Computer Science and Mathematics graduate from Washington and Lee University. Originally from a [small village in Italy](https://en.wikipedia.org/wiki/Cisternino), I'm currently a Prototyping Architect at Amazon Web Services in New York City, where I build AI systems on AWS and deliver customer-facing solutions designed to work reliably at scale.
 
-My research interests sit at the intersection of deep learning, mathematics, and geometry. I’m fascinated by how concepts like graph structures, differential geometry, and topological analysis can enhance neural representations, making models more interpretable and robust. By tapping into these mathematical frameworks, I aim to develop techniques that offer clear, principled insights into complex data, pushing AI towards more transparent and flexible solutions.
+My research interests sit at the intersection of reinforcement learning, representation learning, and the geometry of neural systems. I'm especially interested in how graph structure and differential geometry can shape more robust, interpretable representations, and how RL agents can adapt their behavior and computation under uncertainty. Lately, I've been focusing on adaptive control mechanisms and multi-agent settings, with an emphasis on stability, long-tail performance, and clear behavioral knobs.
 
-I am actively seeking research collaborations to deepen my understanding of these approaches and apply them to real-world challenges in scalable machine learning and data-driven discovery.
+I'm actively seeking research collaborations to deepen these directions and apply them to real-world problems in learning and decision-making.
 
-I'm always eager to discuss research opportunities or collaborate on interesting projects. Feel free to reach out!
+I'm always happy to discuss research ideas or collaborate on interesting projects. Feel free to reach out!
 
 ### Research Interests
 
