@@ -52,12 +52,18 @@ This research redesigns vector similarity search for cloud environments, leverag
 GeoGAT combines bonded connectivity, 3D geometry, and electronic descriptors in a molecular graph model. Using attention on sparse molecular graphs with a global context node, the network captures both local chemistry and long-range interactions. Geometry influences attention through invariant pair and angle features, enabling the model to distinguish conformers and focus on chemically meaningful regions. The approach improves accuracy on tasks like binding affinity, solubility, and LogP prediction while providing interpretable attention patterns for drug discovery and materials science.
 
 #### [Elastic State Models: Geometry-Aware Adaptive Compute](./projects/elastic-state-models.html)
+*NeurIPS 2025*
+
 Elastic State Models (ESM) add adaptive computation to a streaming state-space backbone. At each timestep, a gate converts per-step error into an integer inner depth under an explicit compute penalty. When refinement is activated, ESM performs latent updates using metric-preconditioned gradients and trust-region clipping. The method allocates compute by timestep difficulty—concentrating refinement around bottlenecks in maze navigation and distorted regions in protein loop repair—achieving improved performance at lower average compute than Transformer baselines.
 
 #### [Broadcast-Gain: Minimal Control Plane for Cooperative MARL](./projects/broadcast-gain.html)
+*NY-RL 2025*
+
 Broadcast-Gain (BG) is a fixed-rate, neighbor-only overlay that reduces long-tail latency in cooperative multi-agent reinforcement learning under lossy communication. Each agent broadcasts just two bytes per cycle—a signed residual and a meta tag—without modifying the base learner. Receivers form a confidence-weighted consensus to gate a phase scheduler and apply a clipped, distance-decayed push to the MOVE logit near junctions. At ~0.24 kbit/s per agent, BG reduces tail wait by ~5 steps and increases near-gate flow by +392 per 1k steps on hard evaluation cells.
 
 #### [Mood Swings: Neuromodulatory Control for Deep RL Agents](./projects/mood-swings.html)
+*ICML 2025*
+
 A standard actor-critic agent can shift between impulsive reward harvesting and cautious hazard avoidance using just three global scalars: a dopaminergic gain that multiplies the TD error, and two serotonergic coefficients for entropy drive and threat discounting. These parameters define a continuous "computational mood" manifold outside the network, enabling policy switching by writing three floats. Experiments in Pac-Mind and MiniHack show smooth safety-performance frontiers, with high dopamine accelerating learning but raising collision risk, and high serotonin prolonging survival while tempering returns.
 
 ### Contact
