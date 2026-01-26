@@ -49,6 +49,27 @@
       [data-theme="dark"] .dark-toggle { background: #21262d; color: #c9d1d9; }
       [data-theme="dark"] .dark-toggle:hover { background: #30363d; }
       [data-theme="dark"] footer p { color: #8b949e !important; }
+
+      /* Slideshow */
+      .slideshow {
+        position: relative;
+        width: 100%;
+        max-width: 260px;
+      }
+      .slideshow .slide {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        opacity: 0;
+        transition: opacity 1s ease-in-out;
+      }
+      .slideshow .slide:first-child {
+        position: relative;
+      }
+      .slideshow .slide.active {
+        opacity: 1;
+      }
     </style>
     <!--[if lt IE 9]>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -74,7 +95,12 @@
         <h1><a href="{{ "/" | absolute_url }}">{{ site.title | default: site.github.repository_name }}</a></h1>
 
         {% if site.logo %}
-          <img src="{{site.logo | relative_url}}" alt="Logo" />
+          <div class="slideshow">
+            <img src="{{site.logo | relative_url}}" alt="Photo" class="slide active" />
+            <img src="{{ "/assets/icml-pic.jpeg" | relative_url }}" alt="ICML" class="slide" />
+            <img src="{{ "/assets/neurips.jpeg" | relative_url }}" alt="NeurIPS" class="slide" />
+            <img src="{{ "/assets/nyrl.jpeg" | relative_url }}" alt="NY-RL" class="slide" />
+          </div>
         {% endif %}
 
         <p>{{ site.description | default: site.github.project_tagline }}</p>
@@ -115,6 +141,18 @@
           document.body.dataset.theme = 'dark';
           document.querySelector('.dark-toggle').textContent = '☀️';
         }
+      })();
+
+      // Slideshow
+      (function() {
+        const slides = document.querySelectorAll('.slideshow .slide');
+        if (slides.length === 0) return;
+        let current = 0;
+        setInterval(() => {
+          slides[current].classList.remove('active');
+          current = (current + 1) % slides.length;
+          slides[current].classList.add('active');
+        }, 4000);
       })();
     </script>
   </body>
