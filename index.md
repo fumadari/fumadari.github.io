@@ -8,9 +8,7 @@ Hey! I'm Dario, a Computer Science and Mathematics graduate from Washington and 
 
 My research interests sit at the intersection of reinforcement learning, representation learning, and the geometry of neural systems. I'm especially interested in how graph structure and differential geometry can shape more robust, interpretable representations, and how RL agents can adapt their behavior and computation under uncertainty. Lately, I've been focusing on adaptive control mechanisms and multi-agent settings, with an emphasis on stability, long-tail performance, and clear behavioral knobs.
 
-I'm actively seeking research collaborations to deepen these directions and apply them to real-world problems in learning and decision-making.
-
-I'm always happy to discuss research ideas or collaborate on interesting projects. Feel free to reach out!
+I'm actively seeking research collaborations to apply these directions to real-world problems in learning and decision-making - feel free to reach out if you'd like to discuss ideas or build something together :)
 
 ### Research Interests
 
