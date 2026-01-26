@@ -128,3 +128,39 @@ section {
   padding-bottom: 8px;
   border-bottom: 2px solid #e1e4e8;
 }
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  padding: 8px 16px;
+  border: 1px solid #e1e4e8;
+  border-radius: 6px;
+  background: #f6f8fa;
+  color: #57606a;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  background: #eaeef2;
+}
+
+.tab-btn.active {
+  background: #0366d6;
+  color: white;
+  border-color: #0366d6;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}

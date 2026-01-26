@@ -40,7 +40,12 @@ Conducted research with increasing independence, developing and executing a pers
 
 ### Presented Work
 
-<p class="section-subtitle">Conference Publications</p>
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('conference')">Conference Publications</button>
+  <button class="tab-btn" onclick="showTab('research')">Research Projects</button>
+</div>
+
+<div id="conference" class="tab-content active">
 
 <div class="project-card">
 <h5><a href="./projects/mood-swings.html">Mood Swings: Neuromodulatory Control for Deep RL Agents</a> <span class="venue-badge icml">ICML 2025</span></h5>
@@ -57,7 +62,9 @@ Conducted research with increasing independence, developing and executing a pers
 <p>Broadcast-Gain (BG) is a fixed-rate, neighbor-only overlay that improves coordination in cooperative MARL under lossy communication. Each agent broadcasts two bytes per cycle (a signed residual and a meta tag) without modifying the base PPO+GAE learner; receivers compute a confidence-weighted consensus that gates a phase scheduler and applies a clipped, distance-decayed bias to the MOVE logit near junctions. At ~0.24 kbit/s per agent, BG reduces tail wait by ~5 steps and increases near-gate flow by +392 per 1k steps on hard evaluation cells.</p>
 </div>
 
-<p class="section-subtitle">Research Projects</p>
+</div>
+
+<div id="research" class="tab-content">
 
 <div class="project-card">
 <h5><a href="./projects/vectors-replication.html">Selective Replication for Efficient k-NN Retrieval</a></h5>
@@ -73,4 +80,15 @@ Conducted research with increasing independence, developing and executing a pers
 <h5><a href="./projects/gat-drug-discovery.html">GeoGAT: Geometry-Aware Graph Attention for Molecular Property Prediction</a></h5>
 <p>GeoGAT integrates bonded connectivity, 3D geometry, and electronic descriptors in a sparse molecular graph attention model. A global context node captures molecule-level effects while invariant pair and angle features modulate attention to distinguish conformers and long-range interactions. Across tasks such as solubility, LogP, and binding-related prediction, GeoGAT improves accuracy and yields interpretable attention patterns that localize influential atoms and functional groups.</p>
 </div>
+
+</div>
+
+<script>
+function showTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add('active');
+}
+</script>
 
