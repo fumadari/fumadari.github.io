@@ -16,9 +16,9 @@ I am actively seeking PhD opportunities to deepen my understanding of these appr
 
 ### Research Interests
 
-- **Mathematical Foundations of Deep Learning**: Using concepts from geometry, information theory, and topology to guide model design, ensuring more stable and interpretable neural representations.
-- **Graph-Based Models and Structures**: Employing graph neural networks and manifold learning to capture rich relational information in data, improving accuracy and transparency.
-- **Scalable AI on the Cloud**: Integrating distributed training, efficient architectures, and resource-aware approaches to tackle billion-scale datasets, accelerating innovation while maintaining model integrity.
+- **Reinforcement Learning and Adaptive Control**: I study how agents allocate computation and risk under uncertainty, with a focus on stable learning, long-horizon credit assignment, and interpretable control signals.
+- **Geometric and Structured Representation Learning**: I use geometric and graph-based perspectives to understand and shape neural representations, targeting invariances, robustness, and explanations that map to meaningful structure.
+- **Scalable Retrieval and Learning Systems**: I work on billion-scale embedding systems and cloud-native ML, including efficient indexing/storage, resource-aware inference, and distributed pipelines that keep quality predictable at scale.
 
 ### Education
 
@@ -29,11 +29,11 @@ Relevant Coursework: Deep Learning, Machine Learning and Big Data, Real Analysis
 
 ### Experience Highlights
 
- - **Amazon Web Services (AWS) – Prototyping Architect**:  
-Developed large-scale cloud pipelines integrating advanced deep learning architectures, including attention mechanisms and graph-based models, to accelerate bioinformatics workloads. Employed distributed training and resource-aware scaling strategies to handle massive datasets and implemented retrieval-augmented frameworks with topological insights for enhanced interpretability and recall.
+- **Amazon Web Services (AWS) — Prototyping**:
+Delivered customer-facing applied AI systems on AWS, spanning multimodal and agentic workflows and end-to-end architectures across services such as SageMaker, Lambda, Step Functions, S3, and DynamoDB/OpenSearch. Built systems with infrastructure-as-code, automated evaluation, and production-style observability, and shipped outcomes that influenced multi-million-dollar sales motions.
 
- - **Amazon Science – Research Assistant**:  
-Explored geometric and topological approaches for organizing high-dimensional embeddings at billion-scale. Contributed to next-generation indexing and storage methods that improved retrieval efficiency and data integrity while collaborating with researchers to document and refine strategies grounded in mathematical principles.
+- **Amazon Science — Research (Independent Agenda)**:
+Conducted research with increasing independence, developing and executing a personal research agenda alongside core embedding/indexing work. Presented research outcomes externally, including demos and technical discussions at Amazon's conference booth, and collaborated with researchers on experimental design, writing, and invention work across embedding systems and learning-driven mechanisms.
 
 **Professional Memberships**:
 - Institute of Electrical and Electronics Engineers (IEEE)
