@@ -26,7 +26,7 @@ Relevant Coursework: Deep Learning, Machine Learning and Big Data, Real Analysis
 ### Experience Highlights
 
 - **Amazon Web Services (AWS) — Prototyping**:
-Delivered customer-facing applied AI systems on AWS, spanning multimodal and agentic workflows and end-to-end architectures across services such as SageMaker, Lambda, Step Functions, S3, and DynamoDB/OpenSearch. Built systems with infrastructure-as-code, automated evaluation, and production-style observability, and shipped outcomes that influenced multi-million-dollar sales motions.
+Delivered customer-facing AI solutions on AWS, including multimodal and agent-based workflows, from data ingestion through model inference and evaluation. Built with infrastructure-as-code, automated testing, and clear monitoring so results were repeatable and reliable, and the work supported multi-million-dollar sales outcomes.
 
 - **Amazon Science — Research (Independent Agenda)**:
 Conducted research with increasing independence, developing and executing a personal research agenda alongside core embedding/indexing work. Presented research outcomes externally, including demos and technical discussions at Amazon's conference booth, and collaborated with researchers on experimental design, writing, and invention work across embedding systems and learning-driven mechanisms.
