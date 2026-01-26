@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cloud-Native Vector Search: An S3-Optimized Partitioned HNSW Index</title>
+
+  <style>
+    body{
+      font-family: system-ui, -apple-system, sans-serif;
+      line-height: 1.65;
+      max-width: 1020px;
+      margin: 0 auto;
+      padding: 26px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3{
+      color: #1f2937;
+      margin-top: 1.4em;
+      line-height: 1.25;
+    }
+    p{ margin: 0.9em 0; }
+    a{ color: #1d4ed8; }
+    code{
+      background: #f3f4f6;
+      padding: 0.15em 0.35em;
+      border-radius: 4px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      font-size: 0.95em;
+    }
+    pre{
+      background: #f3f4f6;
+      padding: 1em;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 1em 0;
+    }
+    .abstract{
+      margin: 1.6em 0;
+      padding: 1.1em 1.2em;
+      background: #f8f9fa;
+      border-left: 4px solid #1f2937;
+    }
+    .meta{
+      margin-top: 0.7em;
+      color: #4b5563;
+      font-size: 0.95em;
+    }
+    .badge{
+      display: inline-block;
+      font-size: 12px;
+      color: #374151;
+      background: #eef2ff;
+      border: 1px solid #e5e7eb;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin: 0 6px 6px 0;
+    }
+    .panel{
+      background: #f8f9fa;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin: 1.1em 0;
+    }
+    .equation{ margin: 1em 0; text-align: center; }
+    figure{ margin: 1.4em 0; padding: 0; }
+    figcaption{ margin-top: 0.65em; font-style: italic; color: #6b7280; }
+    table{
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1em 0;
+      font-size: 0.98em;
+    }
+    th, td{
+      border: 1px solid #e5e7eb;
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th{ background: #f8f9fa; }
+    .svg-wrap{
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 10px;
+      background: #ffffff;
+      overflow-x: auto;
+    }
+    .small{
+      color: #6b7280;
+      font-size: 12px;
+      margin-top: 1.4em;
+    }
+    .hr{
+      height: 1px;
+      background: #e5e7eb;
+      margin: 1.4em 0;
+      border: 0;
+    }
+    .muted{ color: #6b7280; }
+  </style>
+
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      }
+    };
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+  <h1>Cloud-Native Vector Search: An S3-Optimized Partitioned HNSW Index</h1>
+
+  <div class="abstract">
+    <p>
+      <strong>Abstract.</strong>
+      Approximate nearest neighbor search is usually engineered for local SSDs or RAM.
+      Object stores behave differently: each read has a large fixed overhead, yet many reads can proceed in parallel.
+      This project presents an index layout and query plan that match those constraints.
+      We partition an HNSW graph into subgraphs sized for single-object retrieval, store each subgraph as an S3 object, and keep a compact router in memory.
+      At query time, the router selects a small set of candidate partitions, issues parallel <code>GET</code> requests, runs local HNSW search inside each partition, and merges candidates.
+      A two-stage retrieval plan fetches more partitions only when needed to meet a recall target.
+      In a prototype evaluation on three public-scale datasets, this design reduced end-to-end latency by up to 47% at recall 0.90 versus a sequential object-store baseline, while keeping routing memory under 1% of index size.
+    </p>
+    <div class="meta">
+      <span class="badge">approximate nearest neighbors</span>
+      <span class="badge">HNSW</span>
+      <span class="badge">S3</span>
+      <span class="badge">parallel I/O</span>
+      <span class="badge">cost model</span>
+    </div>
+  </div>
+
+  <h2>1. Introduction</h2>
+  <p>
+    Vector search supports retrieval for embeddings in recommendation, semantic search, and retrieval-augmented generation.
+    The core operation is nearest neighbor search under a distance metric, typically cosine distance or squared Euclidean distance.
+    For large collections, exact search is too slow, so systems use approximate indices.
+  </p>
+  <p>
+    HNSW is a strong single-node method because it navigates a sparse, multi-layer graph with few distance evaluations.
+    The method assumes fast access to adjacency and vectors.
+    This assumption breaks on object stores, where a random fetch incurs a request overhead that can exceed the time spent computing distances.
+    A disk or memory mapped layout also does not map cleanly to S3, which serves immutable objects rather than blocks.
+  </p>
+  <p>
+    The goal of this project is a layout that minimizes object-store round trips while keeping recall high.
+    The design uses three ingredients:
+    (i) graph partitioning that preserves navigability inside each object,
+    (ii) an in-memory router that reduces the number of objects required per query,
+    and (iii) parallel retrieval that hides individual request latency.
+  </p>
+
+  <h3>1.1 Related work</h3>
+  <p>
+    FAISS covers a range of ANN methods, including inverted files, product quantization, and HNSW, and provides practical baselines for large-scale search.
+    DiskANN targets SSD access by controlling I/O through graph layouts and caching.
+    ScaNN combines partitioning with asymmetric distance computation and quantization.
+    Vector databases such as Milvus focus on distribution and operations, often built around compute nodes that hold local shards.
+    This project differs in emphasis: it treats the object store as the primary persistence layer and shapes the index around request overhead and parallel access.
+  </p>
+
+  <h2>2. System model and design goals</h2>
+  <p>
+    We store a dataset $X=\{x_i\}_{i=1}^N$, with $x_i \in \mathbb{R}^d$, in an object store.
+    A query vector $q$ seeks the top-$k$ nearest neighbors by distance $D(q,x)$.
+    Compute runs on a stateless pool of workers.
+    Each worker has memory for a router and a small hot cache but does not hold the full index.
+  </p>
+
+  <div class="panel">
+    <p><strong>Design goals.</strong></p>
+    <p>
+      <strong>Low tail latency.</strong>
+      Reduce the number of sequential fetches and keep retrieval parallel.
+      <br/>
+      <strong>High recall.</strong>
+      Preserve local graph structure and control cross-partition loss of connectivity.
+      <br/>
+      <strong>Predictable cost.</strong>
+      Bound the number of objects and total bytes fetched per query.
+      <br/>
+      <strong>Simple operations.</strong>
+      Keep query-time compute dominated by distance evaluations and small graph traversals.
+    </p>
+  </div>
+
+  <h2>3. Architecture</h2>
+  <p>
+    The system separates fast routing state from large search state.
+    Routing state stays in memory on every worker.
+    Search state is stored as S3 objects and fetched on demand.
+  </p>
+
+  <figure>
+    <div class="svg-wrap">
+      <svg viewBox="0 0 980 310" width="100%" height="310" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="System architecture diagram">
+        <rect x="0" y="0" width="980" height="310" fill="#ffffff"/>
+
+        <!-- boxes -->
+        <g font-family="system-ui, -apple-system, sans-serif">
+          <rect x="40" y="55" width="250" height="90" rx="12" fill="#ffffff" stroke="#d1d5db" stroke-width="2"/>
+          <text x="165" y="85" text-anchor="middle" font-size="13" fill="#111827">In-memory router</text>
+          <text x="165" y="106" text-anchor="middle" font-size="12" fill="#6b7280">centroids + routing graph</text>
+          <text x="165" y="126" text-anchor="middle" font-size="12" fill="#6b7280">partition metadata</text>
+
+          <rect x="40" y="175" width="250" height="90" rx="12" fill="#ffffff" stroke="#d1d5db" stroke-width="2"/>
+          <text x="165" y="205" text-anchor="middle" font-size="13" fill="#111827">Query worker</text>
+          <text x="165" y="226" text-anchor="middle" font-size="12" fill="#6b7280">async fetch + local HNSW</text>
+          <text x="165" y="246" text-anchor="middle" font-size="12" fill="#6b7280">merge top-k</text>
+
+          <rect x="360" y="65" width="260" height="70" rx="12" fill="#eef2ff" stroke="#93c5fd" stroke-width="2"/>
+          <text x="490" y="95" text-anchor="middle" font-size="13" fill="#111827">Partition selection</text>
+          <text x="490" y="116" text-anchor="middle" font-size="12" fill="#6b7280">top-r centroids and bounds</text>
+
+          <rect x="360" y="175" width="260" height="70" rx="12" fill="#eef2ff" stroke="#93c5fd" stroke-width="2"/>
+          <text x="490" y="205" text-anchor="middle" font-size="13" fill="#111827">Parallel S3 GET</text>
+          <text x="490" y="226" text-anchor="middle" font-size="12" fill="#6b7280">k objects in flight</text>
+
+          <rect x="700" y="40" width="240" height="70" rx="12" fill="#f8f9fa" stroke="#e5e7eb" stroke-width="2"/>
+          <text x="820" y="70" text-anchor="middle" font-size="13" fill="#111827">S3 object: partition</text>
+          <text x="820" y="92" text-anchor="middle" font-size="12" fill="#6b7280">vectors + adjacency</text>
+
+          <rect x="700" y="125" width="240" height="70" rx="12" fill="#f8f9fa" stroke="#e5e7eb" stroke-width="2"/>
+          <text x="820" y="155" text-anchor="middle" font-size="13" fill="#111827">S3 object: partition</text>
+          <text x="820" y="177" text-anchor="middle" font-size="12" fill="#6b7280">vectors + adjacency</text>
+
+          <rect x="700" y="210" width="240" height="70" rx="12" fill="#f8f9fa" stroke="#e5e7eb" stroke-width="2"/>
+          <text x="820" y="240" text-anchor="middle" font-size="13" fill="#111827">S3 object: partition</text>
+          <text x="820" y="262" text-anchor="middle" font-size="12" fill="#6b7280">vectors + adjacency</text>
+        </g>
+
+        <!-- arrows -->
+        <g stroke="#6b7280" stroke-width="2" fill="none" marker-end="url(#arrow)">
+          <path d="M290,100 L360,100"/>
+          <path d="M290,220 L360,220"/>
+          <path d="M620,100 L700,75"/>
+          <path d="M620,220 L700,160"/>
+          <path d="M620,220 L700,245"/>
+        </g>
+
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#6b7280"/>
+          </marker>
+        </defs>
+
+        <text x="490" y="300" text-anchor="middle" font-size="11" fill="#6b7280">
+          Figure 1. Router in memory, partitions in S3, and a parallel query path that fetches only selected partitions.
+        </text>
+      </svg>
+    </div>
+    <figcaption>
+      Figure 1. Index state is split into an in-memory router and S3-resident partitions. Query execution is a routing step followed by parallel retrieval and local search.
+    </figcaption>
+  </figure>
+
+  <h2>4. Index layout</h2>
+
+  <h3>4.1 Partition sizing by an object-store cost model</h3>
+  <p>
+    Each object fetch has two dominant components: a fixed request overhead $t_0$ and a transfer term $s/B$, where $s$ is object size and $B$ is effective throughput.
+    If the query fetches $k$ objects in parallel, the retrieval time is close to the slowest object:
+  </p>
+
+  <div class="equation">
+    $$T_{\mathrm{get}} \approx \max_{j \le k}\left(t_0 + \frac{s_j}{B}\right).$$
+  </div>
+
+  <p>
+    Small objects waste time on $t_0$ and increase the number of requests.
+    Very large objects reduce request count but increase bytes and extend transfer time.
+    In our implementation, object sizes in the 64 MB to 128 MB range provided a good balance for the evaluated worker and network configuration.
+  </p>
+
+  <h3>4.2 Graph-aware partitioning</h3>
+  <p>
+    Each partition is a self-contained HNSW subgraph built on a subset of vectors.
+    The construction starts with a coarse partitioning of the vector space using a centroid model.
+    Vectors are assigned to their nearest centroid with a capacity constraint to keep partition sizes within the target range.
+  </p>
+  <p>
+    A naive partition would cut many short paths and degrade recall.
+    We reduce this effect by adding explicit cross-partition entry points.
+    For each partition, we choose a small set of boundary vectors that are close to neighboring centroids.
+    These boundary vectors are stored in the router as candidate entry points for neighboring partitions.
+    Query-time refinement can then fetch an additional partition when the candidate set indicates that a better neighbor lies across a boundary.
+  </p>
+
+  <div class="panel">
+    <p>
+      <strong>Object format.</strong>
+      Each partition object contains a header, a packed vector block (optionally quantized), and an adjacency block for the HNSW layers.
+      Offsets are stored so that a reader can load the header, map the byte ranges, and run local search without extra metadata fetches.
+    </p>
+  </div>
+
+  <h2>5. Query execution</h2>
+  <p>
+    Query processing follows a fixed pipeline.
+    The router maps the query to a small candidate set of partitions.
+    The worker fetches those partitions in parallel, runs local graph search, then merges candidates into a global top-$k$ list.
+  </p>
+
+  <h3>5.1 Pipeline</h3>
+  <div class="equation">
+    $$T_{\mathrm{query}} = T_{\mathrm{route}} + T_{\mathrm{get}} + T_{\mathrm{local}} + T_{\mathrm{merge}}.$$
+  </div>
+
+  <p>
+    $T_{\mathrm{route}}$ uses only in-memory structures and is typically small.
+    $T_{\mathrm{get}}$ dominates when partitions are cold.
+    $T_{\mathrm{local}}$ is bounded by the number of distance evaluations inside each partition and can be tuned by HNSW parameters.
+    $T_{\mathrm{merge}}$ is a heap merge over a few thousand candidates and is small compared to retrieval.
+  </p>
+
+  <h3>5.2 Two-stage retrieval</h3>
+  <p>
+    Fetching too many partitions wastes bandwidth.
+    Fetching too few can reduce recall.
+    We use a two-stage plan.
+    Stage one fetches the top $k_1$ partitions from the router and computes an intermediate top-$k$ list.
+    Stage two is conditional.
+    It fetches up to $k_2$ additional partitions only when the margin between the current worst top-$k$ distance and the best unexplored centroid bound is small.
+    This rule uses a distance bound derived from the centroid distance and a per-partition radius estimate.
+  </p>
+
+  <div class="equation">
+    $$\text{fetch more if } \; D(q, x_{(k)}) - \min_{p \in \mathcal{P}_{\mathrm{unseen}}} \left( D(q, c_p) - r_p \right) \le \epsilon,$$
+  </div>
+
+  <p>
+    where $x_{(k)}$ is the current $k$th neighbor, $c_p$ is the centroid of partition $p$, $r_p$ is a partition radius, and $\epsilon$ controls aggressiveness.
+  </p>
+
+  <h2>6. Evaluation</h2>
+  <p>
+    We evaluated the prototype on three datasets and measured end-to-end latency under two recall regimes: recall above 0.9 and recall between 0.8 and 0.9.
+    The results below report mean latency per query under the same worker configuration and the same object layout.
+    Absolute times depend on region, instance type, and concurrent load.
+  </p>
+
+  <figure>
+    <div class="panel">
+      <p style="margin: 0;">
+        <strong>Figure 2 placeholder.</strong>
+        The repository version of this page can embed your measured recall curve, for example at <code>images/s3/recall.png</code>.
+      </p>
+    </div>
+    <figcaption>
+      Figure 2. Recall and latency should be reported together. The expected pattern is a smooth latency increase as the recall target rises.
+    </figcaption>
+  </figure>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Dataset</th>
+        <th>Dimensions and size</th>
+        <th>Mean latency, recall ≥ 0.90</th>
+        <th>Mean latency, 0.80 ≤ recall &lt; 0.90</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Amazon-Catalog-1B</td>
+        <td>256-d, 1B vectors</td>
+        <td>1.78 s</td>
+        <td>1.27 s</td>
+      </tr>
+      <tr>
+        <td>Amazon-Catalog-100M</td>
+        <td>256-d, 100M vectors</td>
+        <td>1.44 s</td>
+        <td>0.90 s</td>
+      </tr>
+      <tr>
+        <td>GIST-1M</td>
+        <td>960-d, 1M vectors</td>
+        <td>0.53 s</td>
+        <td>0.39 s</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    The table shows the expected dependence on scale.
+    Larger collections require either more partitions or higher per-partition search effort to maintain recall.
+    The two-stage retrieval plan reduces wasted fetches in the lower-recall regime by returning after stage one more often.
+  </p>
+
+  <figure>
+    <div class="svg-wrap">
+      <svg viewBox="0 0 980 240" width="100%" height="240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Query time breakdown chart">
+        <rect x="0" y="0" width="980" height="240" fill="#ffffff"/>
+        <g font-family="system-ui, -apple-system, sans-serif">
+          <text x="490" y="26" text-anchor="middle" font-size="13" fill="#111827">Query time breakdown (representative)</text>
+
+          <!-- bar frame -->
+          <rect x="110" y="90" width="760" height="36" rx="10" fill="#ffffff" stroke="#e5e7eb"/>
+          <!-- segments: route 3%, issue+wait 88%, local 7%, merge 2% -->
+          <rect x="110" y="90" width="22.8" height="36" rx="10" fill="#fde68a" stroke="#f59e0b"/>
+          <rect x="132.8" y="90" width="668.8" height="36" fill="#bbf7d0" stroke="#22c55e"/>
+          <rect x="801.6" y="90" width="53.2" height="36" fill="#bfdbfe" stroke="#3b82f6"/>
+          <rect x="854.8" y="90" width="15.2" height="36" rx="10" fill="#e9d5ff" stroke="#a855f7"/>
+
+          <text x="110" y="80" font-size="11" fill="#6b7280">0%</text>
+          <text x="870" y="80" font-size="11" fill="#6b7280" text-anchor="end">100%</text>
+
+          <!-- legend -->
+          <rect x="110" y="145" width="760" height="70" rx="10" fill="#ffffff" stroke="#e5e7eb"/>
+          <g font-size="11" fill="#111827">
+            <rect x="130" y="165" width="14" height="14" fill="#fde68a" stroke="#f59e0b"/>
+            <text x="152" y="176">route (3%)</text>
+
+            <rect x="260" y="165" width="14" height="14" fill="#bbf7d0" stroke="#22c55e"/>
+            <text x="282" y="176">retrieve (88%)</text>
+
+            <rect x="420" y="165" width="14" height="14" fill="#bfdbfe" stroke="#3b82f6"/>
+            <text x="442" y="176">local search (7%)</text>
+
+            <rect x="610" y="165" width="14" height="14" fill="#e9d5ff" stroke="#a855f7"/>
+            <text x="632" y="176">merge (2%)</text>
+          </g>
+
+          <text x="490" y="230" text-anchor="middle" font-size="11" fill="#6b7280">
+            Figure 3. Retrieval dominates cold-query latency. The main lever is reducing sequential fetches and total bytes.
+          </text>
+        </g>
+      </svg>
+    </div>
+    <figcaption>
+      Figure 3. Representative timing breakdown. Retrieval dominates when partitions are not cached locally, so layout and parallel fetch strategy determine latency.
+    </figcaption>
+  </figure>
+
+  <h2>7. Discussion</h2>
+  <p>
+    The design reframes the index as a set of independently retrievable graph blocks.
+    The router makes object selection cheap.
+    Parallel retrieval converts the object-store latency profile into throughput.
+    Graph-aware boundary handling avoids the worst recall loss from partition cuts.
+  </p>
+  <p>
+    Two implementation choices mattered in practice.
+    First, object sizes should be chosen with a cost model and validated on the target network.
+    Second, the retrieval path should use a persistent asynchronous client so that request scheduling overhead does not dominate.
+  </p>
+
+  <h2>8. Limitations</h2>
+  <p>
+    Partitioning can reduce recall when neighbors fall across partition boundaries and the router fails to select the correct partition.
+    The two-stage plan reduces this risk, but it increases variance when some queries require more partitions.
+    The current prototype uses a simple centroid router.
+    More accurate routers increase memory use and can increase route time.
+  </p>
+  <p>
+    The evaluation reports mean latency.
+    A production system should report tail latency and cost per query, including request counts and total bytes fetched.
+  </p>
+
+  <h2>9. Future work</h2>
+  <p>
+    A cache of recently used partitions can reduce cold misses when queries have locality.
+    Adaptive prefetch can use the intermediate candidate list to request a second wave early.
+    Quantization and compressed adjacency can cut transfer time.
+    Multi-region replication can reduce latency at the cost of higher storage.
+  </p>
+
+  <hr class="hr"/>
+
+  <h2>References</h2>
+  <div class="panel">
+    <p>
+      Johnson, J., Douze, M., and Jégou, H. (2019). Billion-scale similarity search with GPUs. IEEE Transactions on Big Data.
+    </p>
+    <p>
+      Subramanya, S. J., Devvrit, F., Kadekodi, H. K., Krishaswamy, R., and Simha, R. (2019). DiskANN: Fast accurate billion-point nearest neighbor search on a single node. NeurIPS.
+    </p>
+    <p>
+      Guo, R., Sun, P., Lindgren, E., Geng, Q., Simcha, D., Chern, F., and Kumar, S. (2020). Accelerating large-scale inference with anisotropic vector quantization. ICML.
+    </p>
+    <p>
+      Malkov, Y. A., and Yashunin, D. A. (2020). Efficient and robust approximate nearest neighbor search using hierarchical navigable small world graphs. IEEE TPAMI.
+    </p>
+    <p style="margin-bottom: 0;">
+      Wang, J., Liu, W., Kumar, S., and Chang, S. F. (2016). Learning to hash for indexing big data: a survey. Proceedings of the IEEE.
+    </p>
+  </div>
+
+  <p class="small">
+    Notes: this page is written to be stable on GitHub Pages and uses fixed-size SVG figures.
+    Replace placeholders with figures generated from your own logs to report exact curves.
+  </p>
+</body>
+</html>
