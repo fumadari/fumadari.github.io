@@ -13,6 +13,10 @@ logo: /assets/img/logo.png
 # Shown in the sidebar under the name (not used for SEO).
 motto: The true mystery of the world is the visible, not the invisible. — Oscar Wilde
 
+# Google Search Console ownership (emitted by jekyll-seo-tag as a meta tag)
+webmaster_verifications:
+  google: gYf0JwqnopAyyvVCwSaC1xrJ6i4hk3MUqVJySe15_8o
+
 author:
   name: Dario Fumarola
   email: dariofumarola90@gmail.com
