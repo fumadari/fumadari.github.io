@@ -284,7 +284,7 @@ section.content { min-width: 0; }
 /* Interest cards */
 .interest-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
   margin: 0 0 1.2em;
 }
@@ -354,6 +354,7 @@ section.content { min-width: 0; }
   gap: 5px;
 }
 .card-links svg { width: 13px; height: 13px; stroke: currentColor; }
+.card-links span { font-size: 0.85rem; color: var(--muted); }
 
 /* Venue badges */
 .venue-badge {

@@ -1,10 +1,14 @@
 <!DOCTYPE html>
-<html lang="{{ site.lang | default: "en-US" }}">
+<html lang="{{ site.lang | default: "en" }}">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <script>
+      // fumadari.github.io is the old address; the canonical site lives on dario-fumarola.github.io.
+      if (location.hostname === 'fumadari.github.io') {
+        location.replace('https://dario-fumarola.github.io' + location.pathname + location.search + location.hash);
+      }
       (function () {
         var saved = localStorage.getItem('theme');
         var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -13,6 +17,53 @@
     </script>
 
     {% seo %}
+    {% if page.url == "/" %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "@id": "{{ site.url }}/#person",
+      "name": "Dario Fumarola",
+      "givenName": "Dario",
+      "familyName": "Fumarola",
+      "url": "{{ site.url }}/",
+      "image": "{{ site.url }}/assets/img/logo.png",
+      "email": "mailto:dariofumarola90@gmail.com",
+      "jobTitle": "Prototyping Architect",
+      "worksFor": {
+        "@type": "Organization",
+        "name": "Amazon Web Services",
+        "url": "https://aws.amazon.com/"
+      },
+      "alumniOf": {
+        "@type": "CollegeOrUniversity",
+        "name": "Washington and Lee University",
+        "url": "https://www.wlu.edu/"
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "New York",
+        "addressRegion": "NY",
+        "addressCountry": "US"
+      },
+      "nationality": { "@type": "Country", "name": "Italy" },
+      "knowsAbout": [
+        "Reinforcement learning",
+        "Geometric representation learning",
+        "Adaptive inference",
+        "LLM agents",
+        "Vector search",
+        "Machine learning systems"
+      ],
+      "sameAs": [
+        "https://github.com/dario-fumarola",
+        "https://github.com/fumadari",
+        "https://www.linkedin.com/in/fumarolad",
+        "https://fumadari.github.io/"
+      ]
+    }
+    </script>
+    {% endif %}
     <link rel="icon" type="image/svg+xml" href="{{ "/assets/favicon.svg" | relative_url }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,24 +82,28 @@
         {% if site.logo %}
           <div class="slideshow">
             <img src="{{ site.logo | relative_url }}" alt="Dario Fumarola" class="slide active" />
-            <img src="{{ "/assets/icml-pic.jpeg" | relative_url }}" alt="At ICML 2025" class="slide" loading="lazy" />
-            <img src="{{ "/assets/neurips.jpeg" | relative_url }}" alt="At NeurIPS 2025" class="slide" loading="lazy" />
-            <img src="{{ "/assets/nyrl.jpeg" | relative_url }}" alt="At the NY-RL workshop" class="slide" loading="lazy" />
+            <img src="{{ "/assets/icml-pic.jpeg" | relative_url }}" alt="Dario Fumarola presenting at ICML 2025" class="slide" loading="lazy" />
+            <img src="{{ "/assets/neurips.jpeg" | relative_url }}" alt="Dario Fumarola at NeurIPS 2025" class="slide" loading="lazy" />
+            <img src="{{ "/assets/nyrl.jpeg" | relative_url }}" alt="Dario Fumarola at the NY-RL workshop" class="slide" loading="lazy" />
             <img src="{{ "/assets/photo-5.jpeg" | relative_url }}" alt="Dario Fumarola" class="slide" loading="lazy" />
           </div>
         {% endif %}
 
         <h1 class="site-name"><a href="{{ "/" | absolute_url }}">{{ site.title | default: site.github.repository_name }}</a></h1>
-        <p class="site-role">Prototyping Architect, AWS &middot; ML Researcher</p>
+        <p class="site-role">Prototyping Architect at AWS &middot; AI Researcher &middot; New York</p>
 
-        <p class="site-tagline">{{ site.description | default: site.github.project_tagline }}</p>
+        {% if site.motto %}<p class="site-tagline">{{ site.motto }}</p>{% endif %}
 
         <nav class="contact-links" aria-label="Contact">
           <a href="mailto:dariofumarola90@gmail.com">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/></svg>
             dariofumarola90@gmail.com
           </a>
-          <a href="https://www.linkedin.com/in/fumarolad">
+          <a href="https://github.com/dario-fumarola" rel="me">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+            GitHub
+          </a>
+          <a href="https://www.linkedin.com/in/fumarolad" rel="me">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4V8h4v2a6 6 0 0 1 2-2z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
             LinkedIn
           </a>
@@ -66,7 +121,7 @@
           <a href="#education">Education</a>
         </nav>
 
-        <p class="header-updated">Last updated: January 2026</p>
+        <p class="header-updated">Last updated: September 2026</p>
       </header>
 
       <section class="content">

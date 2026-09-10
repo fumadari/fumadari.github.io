@@ -1,8 +1,37 @@
+# Site identity. jekyll-seo-tag turns these into <title>, meta description,
+# Open Graph tags, and JSON-LD on every page.
 title: Dario Fumarola
+tagline: AI Researcher & Prototyping Architect at AWS
+description: >-
+  Dario Fumarola is an AI researcher and Prototyping Architect at Amazon Web Services in New York City,
+  working on reinforcement learning, geometric representation learning, LLM agents, and large-scale vector search.
+url: "https://dario-fumarola.github.io"
+baseurl: ""
+lang: en
 logo: /assets/img/logo.png
-description: The true mystery of the world is the visible, not the invisible. - Oscar Wilde
+
+# Shown in the sidebar under the name (not used for SEO).
+motto: The true mystery of the world is the visible, not the invisible. — Oscar Wilde
+
+author:
+  name: Dario Fumarola
+  email: dariofumarola90@gmail.com
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      image: /assets/img/logo.png
+
 show_downloads: true
 theme: jekyll-theme-minimal
+
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+exclude:
+  - README.md
 
 markdown: kramdown
 kramdown:
